@@ -43,6 +43,24 @@ const routes: RouteRecordRaw[] = [
         name: 'Permission',
         component: () => import('@/views/system/permission/index.vue'),
         meta: { title: '权限管理', icon: 'Lock' }
+      },
+      {
+        path: 'department',
+        name: 'Department',
+        component: () => import('@/views/system/department/index.vue'),
+        meta: { title: '部门管理', icon: 'OfficeBuilding' }
+      },
+      {
+        path: 'ticket',
+        name: 'Ticket',
+        component: () => import('@/views/ticket/index.vue'),
+        meta: { title: '工单管理', icon: 'Tickets' }
+      },
+      {
+        path: 'chat',
+        name: 'Chat',
+        component: () => import('@/views/chat/index.vue'),
+        meta: { title: '在线客服', icon: 'ChatDotRound' }
       }
     ]
   }
