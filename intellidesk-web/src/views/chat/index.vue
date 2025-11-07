@@ -59,6 +59,10 @@
                 <el-tag :type="getStatusType(currentConversation.status)" size="small" style="margin-left: 10px">
                   {{ currentConversation.statusText }}
                 </el-tag>
+                <!-- AI助手状态 -->
+                <el-tag type="success" size="small" style="margin-left: 10px">
+                  <el-icon><ChatDotRound /></el-icon> AI助手在线
+                </el-tag>
               </div>
               <div>
                 <el-tag v-if="wsConnected" type="success" size="small">
@@ -95,12 +99,44 @@
               v-for="msg in messages"
               :key="msg.id"
               class="message-item"
-              :class="{ 'message-right': msg.senderType === 2 }"
+              :class="{
+                'message-right': msg.senderType === 2,
+                'message-ai': msg.senderType === 4,
+                'message-system': msg.senderType === 3
+              }"
             >
-              <div class="message-sender">
-                {{ msg.senderName }}
-                <span class="message-time">{{ formatTime(msg.createTime) }}</span>
+              <!-- 消息头部（发送者信息） -->
+              <div class="message-header">
+                <!-- AI消息头像 -->
+                <div v-if="msg.senderType === 4" class="message-avatar ai-avatar">
+                  <el-icon :size="24"><Robot /></el-icon>
+                </div>
+                <!-- 人工客服头像 -->
+                <div v-else-if="msg.senderType === 2" class="message-avatar agent-avatar">
+                  <el-icon :size="24"><Service /></el-icon>
+                </div>
+                <!-- 客户头像 -->
+                <div v-else-if="msg.senderType === 1" class="message-avatar customer-avatar">
+                  <el-icon :size="24"><User /></el-icon>
+                </div>
+
+                <div class="message-info">
+                  <div class="message-sender">
+                    <span class="sender-name">{{ msg.senderName }}</span>
+                    <!-- AI标识 -->
+                    <el-tag v-if="msg.senderType === 4" type="success" size="small" effect="dark">
+                      <el-icon><Cpu /></el-icon> AI助手
+                    </el-tag>
+                    <!-- 人工标识 -->
+                    <el-tag v-else-if="msg.senderType === 2" type="primary" size="small">
+                      <el-icon><User /></el-icon> 人工客服
+                    </el-tag>
+                    <span class="message-time">{{ formatTime(msg.createTime) }}</span>
+                  </div>
+                </div>
               </div>
+
+              <!-- 消息内容 -->
               <div class="message-content">
                 <div v-if="msg.messageType === 1" class="message-text">
                   {{ msg.content }}
@@ -112,6 +148,13 @@
                   <el-link :href="msg.attachmentUrl" target="_blank">{{ msg.content }}</el-link>
                 </div>
               </div>
+
+              <!-- AI消息快捷操作 -->
+              <div v-if="msg.senderType === 4" class="message-actions">
+                <el-button type="text" size="small" @click="handleRequestHuman">
+                  <el-icon><Connection /></el-icon> 转人工客服
+                </el-button>
+              </div>
             </div>
           </el-scrollbar>
 
@@ -121,11 +164,16 @@
               v-model="inputMessage"
               type="textarea"
               :rows="3"
-              placeholder="输入消息..."
+              placeholder="输入消息...（客户消息将由AI助手自动回复）"
               @keydown.enter.exact.prevent="handleSendMessage"
             />
             <div class="input-actions">
-              <span class="input-tip">按 Enter 发送，Shift + Enter 换行</span>
+              <div class="input-left">
+                <span class="input-tip">按 Enter 发送，Shift + Enter 换行</span>
+                <el-tag type="info" size="small" style="margin-left: 10px">
+                  <el-icon><InfoFilled /></el-icon> 客户消息由AI自动回复
+                </el-tag>
+              </div>
               <el-button type="primary" @click="handleSendMessage">发送</el-button>
             </div>
           </div>
@@ -186,7 +234,15 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, onUnmounted, nextTick } from 'vue'
 import { ElMessage, ElMessageBox, ElScrollbar } from 'element-plus'
-import { Connection } from '@element-plus/icons-vue'
+import {
+  Connection,
+  ChatDotRound,
+  Robot,
+  Service,
+  User,
+  Cpu,
+  InfoFilled
+} from '@element-plus/icons-vue'
 import { useUserStore } from '@/store/modules/user'
 import {
   createConversation,
@@ -275,7 +331,7 @@ const initWebSocket = () => {
 
   wsClient.value.onConnected(() => {
     wsConnected.value = true
-    ElMessage.success('WebSocket连接成功')
+    ElMessage.success('WebSocket连接成功，AI助手已就绪')
   })
 
   wsClient.value.onDisconnected(() => {
@@ -296,7 +352,7 @@ const handleWebSocketMessage = (wsMessage: WebSocketMessage) => {
     console.log('连接成功:', wsMessage.content)
   } else if (wsMessage.type === 12) {
     // 系统消息
-    console.log('系统消息:', wsMessage.content)
+    ElMessage.info(wsMessage.content || '系统通知')
   } else if (wsMessage.type >= 1 && wsMessage.type <= 5) {
     // 聊天消息
     if (currentConversation.value && wsMessage.conversationId === currentConversation.value.id) {
@@ -403,6 +459,19 @@ const handleEndConversation = async () => {
       console.error('结束会话失败:', error)
     }
   }
+}
+
+// 请求转人工
+const handleRequestHuman = () => {
+  ElMessageBox.confirm('是否需要转接人工客服？', '转接提示', {
+    confirmButtonText: '是的，转人工',
+    cancelButtonText: '继续AI助手',
+    type: 'info'
+  }).then(() => {
+    handleAssignAgent()
+  }).catch(() => {
+    // 取消
+  })
 }
 
 // 发送消息
@@ -557,28 +626,110 @@ onUnmounted(() => {
         background-color: #f5f7fa;
 
         .message-item {
-          margin-bottom: 20px;
+          margin-bottom: 25px;
+          display: flex;
+          flex-direction: column;
 
+          // 客服消息右对齐
           &.message-right {
-            text-align: right;
+            align-items: flex-end;
 
-            .message-content {
-              justify-content: flex-end;
+            .message-header {
+              flex-direction: row-reverse;
+            }
 
-              .message-text {
-                background-color: #409eff;
-                color: white;
-              }
+            .message-content .message-text {
+              background-color: #409eff;
+              color: white;
             }
           }
 
-          .message-sender {
-            font-size: 12px;
-            color: #909399;
-            margin-bottom: 5px;
+          // AI消息样式
+          &.message-ai {
+            .message-header {
+              .ai-avatar {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+              }
+            }
 
-            .message-time {
-              margin-left: 10px;
+            .message-content .message-text {
+              background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+              color: white;
+              border: 2px solid #667eea;
+              box-shadow: 0 2px 8px rgba(102, 126, 234, 0.3);
+            }
+
+            .message-actions {
+              display: flex;
+              justify-content: flex-start;
+              margin-top: 8px;
+              margin-left: 40px;
+            }
+          }
+
+          // 系统消息
+          &.message-system {
+            align-items: center;
+
+            .message-content .message-text {
+              background-color: #f4f4f5;
+              color: #909399;
+              font-size: 13px;
+              text-align: center;
+            }
+          }
+
+          .message-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+
+            .message-avatar {
+              width: 36px;
+              height: 36px;
+              border-radius: 50%;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-right: 10px;
+              flex-shrink: 0;
+
+              &.ai-avatar {
+                background-color: #667eea;
+                color: white;
+              }
+
+              &.agent-avatar {
+                background-color: #409eff;
+                color: white;
+              }
+
+              &.customer-avatar {
+                background-color: #67c23a;
+                color: white;
+              }
+            }
+
+            .message-info {
+              flex: 1;
+
+              .message-sender {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+
+                .sender-name {
+                  font-weight: 600;
+                  font-size: 14px;
+                  color: #303133;
+                }
+
+                .message-time {
+                  font-size: 12px;
+                  color: #909399;
+                }
+              }
             }
           }
 
@@ -587,11 +738,13 @@ onUnmounted(() => {
 
             .message-text {
               max-width: 60%;
-              padding: 10px 15px;
+              padding: 12px 16px;
               background-color: white;
-              border-radius: 8px;
+              border-radius: 12px;
               word-break: break-word;
-              box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+              box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+              line-height: 1.6;
+              font-size: 14px;
             }
 
             .message-image {
@@ -604,12 +757,17 @@ onUnmounted(() => {
               border-radius: 8px;
             }
           }
+
+          .message-actions {
+            margin-top: 5px;
+          }
         }
       }
 
       .message-input {
         padding: 15px;
         border-top: 1px solid #eee;
+        background-color: white;
 
         .input-actions {
           display: flex;
@@ -617,9 +775,14 @@ onUnmounted(() => {
           align-items: center;
           margin-top: 10px;
 
-          .input-tip {
-            font-size: 12px;
-            color: #909399;
+          .input-left {
+            display: flex;
+            align-items: center;
+
+            .input-tip {
+              font-size: 12px;
+              color: #909399;
+            }
           }
         }
       }
