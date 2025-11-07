@@ -8,10 +8,10 @@
 
 ## 📋 总体进度
 
-- **已完成**: 22 项
+- **已完成**: 24 项
 - **进行中**: 0 项
-- **待开始**: 26 项
-- **总进度**: 约 45%
+- **待开始**: 24 项
+- **总进度**: 约 50%
 
 ---
 
@@ -268,6 +268,48 @@
   - 会话分配
   - 会话结束
   - WebSocket 工具类（自动重连、心跳）
+  - AI消息样式区分
+  - 转人工按钮
+  - 消息类型标签和图标
+
+### 9. AI Agent 服务 (intellidesk-ai-service) (已完成)
+
+- [x] **基础框架**
+  - Spring Boot Web 集成
+  - Nacos 服务注册与发现
+  - Redis 缓存配置
+  - OkHttp HTTP 客户端
+
+- [x] **智谱AI集成**
+  - ZhipuAiClient - HTTP 客户端
+  - Chat Completions API 对接
+  - Embedding API 对接
+  - glm-4-flash 免费模型
+
+- [x] **对话管理**
+  - AiChatService - 对话业务逻辑
+  - 多轮对话上下文管理（Redis）
+  - 最大10轮上下文，30分钟过期
+  - 系统提示词配置
+
+- [x] **意图识别**
+  - 识别用户问题类型（问候/咨询/投诉/转人工/其他）
+  - 置信度评分
+  - 自动判断是否需要转人工
+
+- [x] **API接口**
+  - AiChatController - REST API
+  - POST /api/v1/ai/chat - 对话接口
+  - POST /api/v1/ai/intent - 意图识别
+  - DELETE /api/v1/ai/context/{userId} - 清除上下文
+  - GET /api/v1/ai/health - 健康检查
+
+- [x] **与会话服务集成**
+  - AiServiceClient - Feign 客户端
+  - 客户消息自动触发AI回复
+  - AI消息保存（senderType=4, senderId=0）
+  - 转人工流程集成
+  - WebSocket 推送AI回复
 
 ---
 
@@ -384,30 +426,7 @@
   - 附件管理
   - 附件下载
 
-#### 13. AI Agent 服务 (intellidesk-ai-service)
-
-- [ ] **基础框架搭建**
-  - 创建模块
-  - LangChain4j 集成
-  - OpenAI API 配置
-  - Milvus 向量库集成
-
-- [ ] **简单对话功能**
-  - 接收用户消息
-  - 调用 LLM 生成回复
-  - 返回 AI 回复
-  - 流式输出支持
-
-- [ ] **意图识别**
-  - 识别用户问题类型
-  - 分类（问候、咨询、投诉等）
-
-- [ ] **对话管理**
-  - 多轮对话上下文管理（Redis）
-  - 会话历史记录
-  - 对话策略（转人工规则）
-
-#### 14. 知识库服务 (intellidesk-knowledge-service)
+#### 13. 知识库服务 (intellidesk-knowledge-service)
 
 - [ ] **基础框架搭建**
   - 创建模块
