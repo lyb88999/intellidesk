@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.intellidesk.user.mapper.SysUserMapper">
+
+    <!-- 根据用户ID查询角色编码列表 -->
+    <select id="selectRoleCodesByUserId" resultType="java.lang.String">
+        SELECT sr.role_code
+        FROM sys_role sr
+                 INNER JOIN sys_user_role sur ON sr.id = sur.role_id
+        WHERE sur.user_id = #{userId}
+          AND sr.deleted = 0
+          AND sr.status = 1
+    </select>
+
+    <!-- 根据用户ID查询权限编码列表 -->
+    <select id="selectPermissionCodesByUserId" resultType="java.lang.String">
+        SELECT DISTINCT sp.permission_code
+        FROM sys_permission sp
+                 INNER JOIN sys_role_permission srp ON sp.id = srp.permission_id
+                 INNER JOIN sys_user_role sur ON srp.role_id = sur.role_id
+        WHERE sur.user_id = #{userId}
+          AND sp.deleted = 0
+          AND sp.status = 1
+    </select>
+
+</mapper>
