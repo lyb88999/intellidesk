@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.intellidesk</groupId>
+        <artifactId>intellidesk-parent</artifactId>
+        <version>1.0.0-SNAPSHOT</version>
+    </parent>
+
+    <artifactId>intellidesk-common</artifactId>
+    <packaging>pom</packaging>
+    <name>IntelliDesk Common - 公共模块</name>
+    <description>公共模块，包含通用工具类、配置、安全等</description>
+
+    <modules>
+        <module>common-core</module>
+        <module>common-web</module>
+        <module>common-security</module>
+        <module>common-redis</module>
+        <module>common-mybatis</module>
+    </modules>
+
+</project>
