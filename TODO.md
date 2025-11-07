@@ -8,10 +8,10 @@
 
 ## 📋 总体进度
 
-- **已完成**: 15 项
-- **进行中**: 1 项
-- **待开始**: 32 项
-- **总进度**: 约 30%
+- **已完成**: 22 项
+- **进行中**: 0 项
+- **待开始**: 26 项
+- **总进度**: 约 45%
 
 ---
 
@@ -110,7 +110,7 @@
   - Redis 响应式集成
   - Sentinel 限流配置
 
-### 5. 用户服务 (intellidesk-user-service) (部分完成)
+### 5. 用户服务 (intellidesk-user-service) (已完成)
 
 - [x] **基础框架**
   - Spring Boot Web 集成
@@ -123,6 +123,7 @@
   - SysUser - 用户实体
   - SysRole - 角色实体
   - SysPermission - 权限实体
+  - SysDepartment - 部门实体
 
 - [x] **登录认证功能**
   - LoginRequest/LoginResponse DTO/VO
@@ -134,18 +135,153 @@
   - JWT Token 生成（Access + Refresh）
   - 角色权限查询
   - Token 刷新
-  - 用户登出（TODO: Redis 黑名单）
+  - 用户登出（含 Token 黑名单）
+
+- [x] **用户管理功能**
+  - UserController - 用户 CRUD
+  - 用户信息查询
+  - 用户注册
+  - 修改密码
+  - 用户列表查询（分页）
+
+- [x] **角色权限管理**
+  - RoleController - 角色 CRUD
+  - PermissionController - 权限 CRUD
+  - 角色权限分配
+
+- [x] **部门管理**
+  - DepartmentController - 部门 CRUD
+  - 部门树查询
+  - 完整的增删改查功能
 
 - [x] **API 测试文档 (API_TEST.md)**
   - 完整的接口文档
   - cURL 测试示例
   - 测试场景说明
 
+### 6. 工单服务 (intellidesk-ticket-service) (已完成)
+
+- [x] **基础框架**
+  - Spring Boot Web 集成
+  - Nacos 服务注册与发现
+  - MyBatis-Plus + Druid 数据库配置
+  - Redis 缓存配置
+
+- [x] **实体类**
+  - Ticket - 工单实体（28字段）
+  - TicketLog - 工单日志实体
+
+- [x] **工单管理功能**
+  - TicketController - 工单 CRUD
+  - 创建工单
+  - 查询工单（列表、详情）
+  - 更新工单
+  - 删除工单
+  - 工单分配
+  - 工单解决
+  - 工单关闭
+  - 工单评价
+
+- [x] **工单流转**
+  - 工单状态管理（待处理→处理中→已解决→已关闭）
+  - 工单编号自动生成（TK20250107000001）
+  - 操作日志自动记录
+
+- [x] **工单日志**
+  - 完整操作日志记录
+  - 日志查询接口
+
+### 7. 会话服务 (intellidesk-chat-service) (已完成)
+
+- [x] **基础框架**
+  - Spring Boot Web 集成
+  - Nacos 服务注册与发现
+  - MyBatis-Plus + Druid 数据库配置
+  - Redis 缓存配置
+
+- [x] **实体类**
+  - Conversation - 会话实体（25字段）
+  - Message - 消息实体（14字段）
+
+- [x] **WebSocket 集成**
+  - Spring WebSocket 配置
+  - ChatWebSocketHandler - WebSocket 处理器
+  - WebSocket 连接管理（ConcurrentHashMap）
+  - 心跳检测机制
+
+- [x] **实时对话功能**
+  - 客户发起会话
+  - 客服接入会话
+  - 实时消息收发（文本、图片、文件、语音、视频）
+  - 会话历史记录查询
+  - 会话编号自动生成（CS20250107000001）
+
+- [x] **会话管理**
+  - ConversationController - 会话 CRUD
+  - MessageController - 消息 API
+  - 会话分配（手动）
+  - 会话结束
+  - 会话列表（按客户/客服查询）
+  - 等待时长和对话时长自动计算
+
+### 8. 前端开发 (intellidesk-web) (部分完成)
+
+- [x] **项目初始化**
+  - Vue 3 + Vite + TypeScript
+  - Element Plus UI
+  - Pinia 状态管理
+  - Vue Router
+  - Axios
+
+- [x] **基础布局**
+  - 登录页
+  - 注册页
+  - 主框架布局
+  - 菜单导航
+
+- [x] **用户管理模块**
+  - 用户列表
+  - 用户详情
+  - 用户编辑
+
+- [x] **角色权限管理模块**
+  - 角色列表
+  - 权限列表
+
+- [x] **部门管理模块**
+  - 部门树形展示
+  - 部门增删改查
+  - 上级部门选择
+
+- [x] **工单管理模块**
+  - 工单列表（分页、筛选）
+  - 工单创建
+  - 工单详情查看
+  - 工单分配
+  - 工单解决
+  - 工单关闭
+
+- [x] **在线客服模块**
+  - 会话列表
+  - 实时对话窗口
+  - WebSocket 实时通信
+  - 会话分配
+  - 会话结束
+  - WebSocket 工具类（自动重连、心跳）
+
 ---
 
 ## 🚧 进行中任务
 
-### 6. 网关 JWT 认证过滤器 (进行中)
+暂无进行中任务
+
+---
+
+## 📋 待开始任务
+
+### 优先级 P0 - 核心基础功能
+
+#### 9. 网关 JWT 认证过滤器
 
 - [ ] **AuthenticationFilter - JWT 认证过滤器**
   - 提取 Token
@@ -154,58 +290,24 @@
   - 传递给下游服务
   - 白名单配置（登录接口、健康检查等）
 
----
-
-## 📋 待开始任务
-
-### 优先级 P0 - 核心基础功能
-
-#### 7. 用户服务 - 用户管理功能
-
-- [ ] **用户信息查询**
-  - GET /user/info - 获取当前登录用户信息
-  - GET /user/{id} - 根据ID查询用户
-
-- [ ] **用户 CRUD**
-  - POST /user - 创建用户
-  - PUT /user/{id} - 更新用户
-  - DELETE /user/{id} - 删除用户（逻辑删除）
-  - GET /user/list - 用户列表（分页）
-  - PUT /user/{id}/password - 修改密码
-
-- [ ] **用户状态管理**
-  - PUT /user/{id}/status - 启用/禁用用户
-  - PUT /user/{id}/reset-password - 重置密码
-
-#### 8. 用户服务 - 角色权限管理
-
-- [ ] **角色管理**
-  - RoleController - 角色 CRUD
-  - 分配权限给角色
-  - 查询角色权限列表
-
-- [ ] **权限管理**
-  - PermissionController - 权限 CRUD
-  - 权限树查询（菜单权限）
-
-- [ ] **用户角色关联**
-  - 分配角色给用户
-  - 查询用户角色列表
-  - 移除用户角色
-
-#### 9. 用户服务 - 部门与技能组
-
-- [ ] **部门管理**
-  - DepartmentController - 部门 CRUD
-  - 部门树查询
-  - 部门人员管理
+#### 10. 技能组管理
 
 - [ ] **技能组管理**
   - SkillGroupController - 技能组 CRUD
   - 客服技能组关联
   - 技能组成员管理
+  - 技能组前端页面
 
-#### 10. Redis 缓存增强
+#### 11. 工单分类管理
+
+- [ ] **工单分类**
+  - TicketCategory 实体和 Mapper
+  - CategoryController - 分类 CRUD
+  - 分类树形结构
+  - 工单创建时选择分类
+  - 分类前端页面
+
+#### 12. Redis 缓存增强
 
 - [ ] **Redis 工具类**
   - RedisUtils - 通用 Redis 操作
