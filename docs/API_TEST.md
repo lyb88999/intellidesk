@@ -1477,6 +1477,428 @@ curl http://localhost:8080/api/user/permission/list/type/2 \
 
 ---
 
+## 🏢 部门管理API
+
+### 1. 创建部门
+
+**接口**: `POST /api/user/department`
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/department \
+  -X POST \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parentId": 0,
+    "deptName": "技术部",
+    "deptCode": "TECH",
+    "leaderId": 1,
+    "phone": "010-12345678",
+    "email": "tech@intellidesk.com",
+    "sort": 1,
+    "status": 1
+  }'
+```
+
+**请求参数说明**:
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| parentId | Long | 是 | 父部门ID（0表示根部门） |
+| deptName | String | 是 | 部门名称 |
+| deptCode | String | 是 | 部门编码（唯一） |
+| leaderId | Long | 否 | 负责人ID |
+| phone | String | 否 | 联系电话 |
+| email | String | 否 | 邮箱 |
+| sort | Integer | 否 | 排序（默认0） |
+| status | Integer | 否 | 状态：0-禁用，1-正常（默认1） |
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": 1,
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+### 2. 更新部门
+
+**接口**: `PUT /api/user/department`
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/department \
+  -X PUT \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": 1,
+    "parentId": 0,
+    "deptName": "技术研发部",
+    "deptCode": "TECH_RD",
+    "leaderId": 2,
+    "phone": "010-87654321",
+    "email": "tech-rd@intellidesk.com",
+    "sort": 1,
+    "status": 1
+  }'
+```
+
+**请求参数说明**:
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| id | Long | 是 | 部门ID |
+| parentId | Long | 是 | 父部门ID |
+| deptName | String | 是 | 部门名称 |
+| deptCode | String | 是 | 部门编码 |
+| leaderId | Long | 否 | 负责人ID |
+| phone | String | 否 | 联系电话 |
+| email | String | 否 | 邮箱 |
+| sort | Integer | 否 | 排序 |
+| status | Integer | 否 | 状态 |
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": null,
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+### 3. 删除部门
+
+**接口**: `DELETE /api/user/department/{id}`
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/department/1 \
+  -X DELETE \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**路径参数**:
+- `id`: 部门ID
+
+**注意事项**:
+- 部门下有子部门时不能删除
+- 部门下有用户时不能删除
+- 删除为逻辑删除
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null,
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+### 4. 查询部门详情
+
+**接口**: `GET /api/user/department/{id}`
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/department/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": 1,
+    "parentId": 0,
+    "deptName": "技术部",
+    "deptCode": "TECH",
+    "leaderId": 1,
+    "leaderName": "张三",
+    "phone": "010-12345678",
+    "email": "tech@intellidesk.com",
+    "sort": 1,
+    "status": 1,
+    "createTime": "2024-01-01T10:00:00",
+    "children": null
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**响应字段说明**:
+| 字段名 | 类型 | 说明 |
+|--------|------|------|
+| id | Long | 部门ID |
+| parentId | Long | 父部门ID |
+| deptName | String | 部门名称 |
+| deptCode | String | 部门编码 |
+| leaderId | Long | 负责人ID |
+| leaderName | String | 负责人姓名 |
+| phone | String | 联系电话 |
+| email | String | 邮箱 |
+| sort | Integer | 排序 |
+| status | Integer | 状态：0-禁用，1-正常 |
+| createTime | String | 创建时间 |
+| children | Array | 子部门列表（树形结构时使用） |
+
+### 5. 查询部门列表（分页）
+
+**接口**: `GET /api/user/department/list`
+
+**cURL 示例**:
+```bash
+# 查询所有部门（分页）
+curl http://localhost:8080/api/user/department/list?pageNum=1&pageSize=10 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+
+# 按名称模糊查询
+curl http://localhost:8080/api/user/department/list?deptName=技术&pageNum=1&pageSize=10 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+
+# 按状态查询
+curl http://localhost:8080/api/user/department/list?status=1&pageNum=1&pageSize=10 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**请求参数**:
+| 参数名 | 类型 | 必填 | 说明 |
+|--------|------|------|------|
+| deptName | String | 否 | 部门名称（模糊查询） |
+| deptCode | String | 否 | 部门编码（模糊查询） |
+| status | Integer | 否 | 状态：0-禁用，1-正常 |
+| pageNum | Integer | 否 | 页码（默认1） |
+| pageSize | Integer | 否 | 每页大小（默认10） |
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "total": 5,
+    "records": [
+      {
+        "id": 1,
+        "parentId": 0,
+        "deptName": "技术部",
+        "deptCode": "TECH",
+        "leaderId": 1,
+        "leaderName": "张三",
+        "phone": "010-12345678",
+        "email": "tech@intellidesk.com",
+        "sort": 1,
+        "status": 1,
+        "createTime": "2024-01-01T10:00:00"
+      },
+      {
+        "id": 2,
+        "parentId": 1,
+        "deptName": "研发组",
+        "deptCode": "TECH_RD",
+        "leaderId": 2,
+        "leaderName": "李四",
+        "phone": "010-87654321",
+        "email": "rd@intellidesk.com",
+        "sort": 1,
+        "status": 1,
+        "createTime": "2024-01-02T11:00:00"
+      }
+    ]
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+### 6. 查询部门树
+
+**接口**: `GET /api/user/department/tree`
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/department/tree \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**说明**:
+- 返回树形结构的完整部门层级
+- 按 `sort` 排序
+- 包含负责人姓名
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": [
+    {
+      "id": 1,
+      "parentId": 0,
+      "deptName": "IntelliDesk",
+      "deptCode": "ROOT",
+      "leaderId": 1,
+      "leaderName": "CEO",
+      "phone": "010-12345678",
+      "email": "admin@intellidesk.com",
+      "sort": 0,
+      "status": 1,
+      "createTime": "2024-01-01T10:00:00",
+      "children": [
+        {
+          "id": 2,
+          "parentId": 1,
+          "deptName": "技术部",
+          "deptCode": "TECH",
+          "leaderId": 2,
+          "leaderName": "张三",
+          "phone": "010-11111111",
+          "email": "tech@intellidesk.com",
+          "sort": 1,
+          "status": 1,
+          "createTime": "2024-01-02T10:00:00",
+          "children": [
+            {
+              "id": 3,
+              "parentId": 2,
+              "deptName": "研发组",
+              "deptCode": "TECH_RD",
+              "leaderId": 3,
+              "leaderName": "李四",
+              "phone": "010-22222222",
+              "email": "rd@intellidesk.com",
+              "sort": 1,
+              "status": 1,
+              "createTime": "2024-01-03T10:00:00",
+              "children": null
+            },
+            {
+              "id": 4,
+              "parentId": 2,
+              "deptName": "测试组",
+              "deptCode": "TECH_QA",
+              "leaderId": 4,
+              "leaderName": "王五",
+              "phone": "010-33333333",
+              "email": "qa@intellidesk.com",
+              "sort": 2,
+              "status": 1,
+              "createTime": "2024-01-04T10:00:00",
+              "children": null
+            }
+          ]
+        },
+        {
+          "id": 5,
+          "parentId": 1,
+          "deptName": "客服部",
+          "deptCode": "SERVICE",
+          "leaderId": 5,
+          "leaderName": "赵六",
+          "phone": "010-44444444",
+          "email": "service@intellidesk.com",
+          "sort": 2,
+          "status": 1,
+          "createTime": "2024-01-05T10:00:00",
+          "children": null
+        }
+      ]
+    }
+  ],
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+### 测试脚本
+
+创建测试脚本 `test-department.sh`:
+
+```bash
+#!/bin/bash
+
+# 配置
+BASE_URL="http://localhost:8080/api/user"
+TOKEN="eyJhbGciOiJIUzI1NiJ9..."  # 替换为实际的 Token
+
+echo "=== IntelliDesk 部门管理 API 测试 ==="
+echo ""
+
+# 1. 创建根部门
+echo "1. 创建根部门..."
+curl -s -X POST "$BASE_URL/department" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parentId": 0,
+    "deptName": "IntelliDesk",
+    "deptCode": "ROOT",
+    "phone": "010-12345678",
+    "email": "admin@intellidesk.com",
+    "sort": 0,
+    "status": 1
+  }' | jq .
+echo ""
+
+# 2. 创建技术部
+echo "2. 创建技术部..."
+curl -s -X POST "$BASE_URL/department" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parentId": 1,
+    "deptName": "技术部",
+    "deptCode": "TECH",
+    "phone": "010-11111111",
+    "email": "tech@intellidesk.com",
+    "sort": 1,
+    "status": 1
+  }' | jq .
+echo ""
+
+# 3. 查询部门树
+echo "3. 查询部门树..."
+curl -s "$BASE_URL/department/tree" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+echo ""
+
+# 4. 查询部门列表
+echo "4. 查询部门列表..."
+curl -s "$BASE_URL/department/list?pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+echo ""
+
+# 5. 查询部门详情
+echo "5. 查询部门详情（ID=1）..."
+curl -s "$BASE_URL/department/1" \
+  -H "Authorization: Bearer $TOKEN" | jq .
+echo ""
+
+# 6. 更新部门
+echo "6. 更新部门..."
+curl -s -X PUT "$BASE_URL/department" \
+  -H "Authorization: Bearer $TOKEN" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "id": 1,
+    "parentId": 0,
+    "deptName": "IntelliDesk总部",
+    "deptCode": "ROOT",
+    "phone": "010-12345678",
+    "email": "admin@intellidesk.com",
+    "sort": 0,
+    "status": 1
+  }' | jq .
+echo ""
+
+echo "=== 测试完成 ==="
+```
+
+---
+
 ## 📝 下一步开发
 
 - [x] 实现用户信息查询接口
@@ -1485,11 +1907,15 @@ curl http://localhost:8080/api/user/permission/list/type/2 \
 - [x] Token 黑名单（Redis）
 - [x] 角色管理接口
 - [x] 权限管理接口
-- [ ] 部门管理接口
-- [ ] 用户注册接口
-- [ ] 密码管理接口
+- [x] 部门管理接口
+- [x] 用户注册接口
+- [x] 密码管理接口
+- [ ] 技能组管理接口
 - [ ] 验证码功能
 - [ ] 多设备登录管理
+- [ ] 工单服务开发
+- [ ] 会话服务开发
+- [ ] AI Agent 服务开发
 
 ---
 

@@ -44,6 +44,11 @@ public enum ResultCode {
     NOT_FOUND(404, "资源不存在"),
 
     /**
+     * 请求错误
+     */
+    BAD_REQUEST(400, "请求参数错误"),
+
+    /**
      * 请求方法不支持
      */
     METHOD_NOT_ALLOWED(405, "请求方法不支持"),
@@ -113,6 +118,21 @@ public enum ResultCode {
      * 旧密码错误
      */
     OLD_PASSWORD_ERROR(1010, "旧密码错误"),
+
+    /**
+     * 角色不存在
+     */
+    ROLE_NOT_FOUND(1011, "角色不存在"),
+
+    /**
+     * 权限不存在
+     */
+    PERMISSION_NOT_FOUND(1012, "权限不存在"),
+
+    /**
+     * 部门不存在
+     */
+    DEPARTMENT_NOT_FOUND(1013, "部门不存在"),
 
     /**
      * 工单不存在
