@@ -467,12 +467,356 @@ ab -n 1000 -c 100 -p login.json -T application/json \
 
 ---
 
+## 👤 用户管理API
+
+### 1. 获取当前用户信息
+
+**接口**: `GET /api/user/user/info`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**说明**:
+- 从 JWT Token 中获取用户ID
+- 网关会自动将用户ID通过 `X-User-Id` 请求头传递给下游服务
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/user/info \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": 1,
+    "username": "admin",
+    "nickname": "系统管理员",
+    "avatar": null,
+    "email": null,
+    "phone": null,
+    "userType": 3,
+    "status": 1,
+    "deptId": null,
+    "deptName": null,
+    "skillGroupId": null,
+    "skillGroupName": null,
+    "roles": ["ROLE_SUPER_ADMIN"],
+    "permissions": [],
+    "createTime": "2025-01-15T10:00:00",
+    "updateTime": "2025-01-15T10:00:00"
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 2. 根据ID查询用户
+
+**接口**: `GET /api/user/user/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `id`: 用户ID
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/user/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应**: 同上
+
+---
+
+### 3. 创建用户
+
+**接口**: `POST /api/user/user`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**请求体**:
+```json
+{
+  "username": "newuser",
+  "password": "password123",
+  "nickname": "新用户",
+  "email": "newuser@example.com",
+  "phone": "13800138000",
+  "userType": 1,
+  "avatar": "https://example.com/avatar.jpg",
+  "deptId": 1,
+  "skillGroupId": 1,
+  "roleIds": [2, 3]
+}
+```
+
+**字段说明**:
+- `username`: 用户名（必填，4-20字符，只能包含字母数字下划线）
+- `password`: 密码（必填，6-20字符）
+- `nickname`: 昵称（必填，最多50字符）
+- `email`: 邮箱（选填，需符合邮箱格式）
+- `phone`: 手机号（选填，需符合手机号格式）
+- `userType`: 用户类型（必填，1-客户 2-客服 3-管理员）
+- `avatar`: 头像URL（选填）
+- `deptId`: 部门ID（选填）
+- `skillGroupId`: 技能组ID（选填，仅客服）
+- `roleIds`: 角色ID列表（选填）
+
+**cURL 示例**:
+```bash
+curl -X POST http://localhost:8080/api/user/user \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "username": "newuser",
+    "password": "password123",
+    "nickname": "新用户",
+    "email": "newuser@example.com",
+    "phone": "13800138000",
+    "userType": 1
+  }'
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": 2,
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**失败响应** - 用户名已存在 (200 OK):
+```json
+{
+  "code": 1004,
+  "message": "用户名已存在",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**失败响应** - 邮箱已存在 (200 OK):
+```json
+{
+  "code": 1006,
+  "message": "邮箱已存在",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**失败响应** - 手机号已存在 (200 OK):
+```json
+{
+  "code": 1005,
+  "message": "手机号已存在",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 4. 更新用户
+
+**接口**: `PUT /api/user/user/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**路径参数**:
+- `id`: 用户ID
+
+**请求体**:
+```json
+{
+  "nickname": "更新后的昵称",
+  "email": "newemail@example.com",
+  "phone": "13900139000",
+  "userType": 2,
+  "avatar": "https://example.com/new-avatar.jpg",
+  "status": 1,
+  "deptId": 2,
+  "skillGroupId": 2,
+  "roleIds": [3, 4]
+}
+```
+
+**字段说明**: 所有字段均为选填，只更新提供的字段
+
+**cURL 示例**:
+```bash
+curl -X PUT http://localhost:8080/api/user/user/2 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "nickname": "更新后的昵称",
+    "email": "newemail@example.com"
+  }'
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 5. 删除用户
+
+**接口**: `DELETE /api/user/user/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `id`: 用户ID
+
+**说明**: 采用逻辑删除，用户数据不会真正删除
+
+**cURL 示例**:
+```bash
+curl -X DELETE http://localhost:8080/api/user/user/2 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 6. 分页查询用户列表
+
+**接口**: `GET /api/user/user/list`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**查询参数**:
+- `username`: 用户名（模糊查询，选填）
+- `nickname`: 昵称（模糊查询，选填）
+- `email`: 邮箱（模糊查询，选填）
+- `phone`: 手机号（精确查询，选填）
+- `userType`: 用户类型（选填）
+- `status`: 状态（选填，0-禁用 1-正常）
+- `deptId`: 部门ID（选填）
+- `skillGroupId`: 技能组ID（选填）
+- `pageNum`: 页码（默认1）
+- `pageSize`: 每页大小（默认10）
+
+**cURL 示例**:
+```bash
+# 查询所有用户（第1页，每页10条）
+curl "http://localhost:8080/api/user/user/list?pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+
+# 查询客户类型用户
+curl "http://localhost:8080/api/user/user/list?userType=1&pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+
+# 模糊搜索用户名
+curl "http://localhost:8080/api/user/user/list?username=admin&pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "total": 100,
+    "pageNum": 1,
+    "pageSize": 10,
+    "pages": 10,
+    "data": [
+      {
+        "id": 1,
+        "username": "admin",
+        "nickname": "系统管理员",
+        "avatar": null,
+        "email": null,
+        "phone": null,
+        "userType": 3,
+        "status": 1,
+        "deptId": null,
+        "skillGroupId": null,
+        "roles": ["ROLE_SUPER_ADMIN"],
+        "permissions": [],
+        "createTime": "2025-01-15T10:00:00",
+        "updateTime": "2025-01-15T10:00:00"
+      }
+    ]
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+## 🧪 用户服务完整测试流程
+
+### 使用测试脚本
+
+```bash
+# 赋予执行权限
+chmod +x scripts/test-user.sh
+
+# 运行测试
+./scripts/test-user.sh
+```
+
+测试脚本会自动测试以下场景：
+1. 获取当前用户信息
+2. 创建新用户
+3. 根据ID查询用户
+4. 更新用户信息
+5. 分页查询用户列表
+6. 删除用户
+7. 用户名重复校验
+
+---
+
 ## 📝 下一步开发
 
-- [ ] 实现用户信息查询接口
-- [ ] 实现用户 CRUD 接口
-- [ ] 网关 JWT 认证过滤器
+- [x] 实现用户信息查询接口
+- [x] 实现用户 CRUD 接口
+- [x] 网关 JWT 认证过滤器
 - [ ] Token 黑名单（Redis）
+- [ ] 角色管理接口
+- [ ] 权限管理接口
+- [ ] 部门管理接口
 - [ ] 验证码功能
 - [ ] 多设备登录管理
 
