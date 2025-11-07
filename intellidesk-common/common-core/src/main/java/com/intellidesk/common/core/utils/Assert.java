@@ -70,9 +70,9 @@ public class Assert {
      * @param object     对象
      * @param resultCode 响应码
      */
-    public static void notNull(Object object, ResultCode resultCode) {
+    public static void notNull(Object object, ResultCode resultCode, String message) {
         if (object == null) {
-            throw new BusinessException(resultCode);
+            throw new BusinessException(resultCode, message);
         }
     }
 

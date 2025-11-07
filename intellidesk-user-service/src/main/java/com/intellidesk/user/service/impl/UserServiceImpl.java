@@ -47,11 +47,11 @@ public class UserServiceImpl implements IUserService {
 
         // 查询用户
         SysUser user = userMapper.selectById(userId);
-        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND, "用户不存在");
 
         // 检查是否已删除
         if (user.getDeleted() == 1) {
-            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+            throw new BusinessException(ResultCode.USER_NOT_FOUND, "用户已被删除");
         }
 
         // 查询角色和权限
@@ -112,17 +112,17 @@ public class UserServiceImpl implements IUserService {
     public void updateUser(Long userId, UserUpdateRequest request) {
         // 1. 查询用户
         SysUser user = userMapper.selectById(userId);
-        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND, "用户不存在");
 
         // 2. 检查是否已删除
         if (user.getDeleted() == 1) {
-            throw new BusinessException(ResultCode.USER_NOT_FOUND);
+            throw new BusinessException(ResultCode.USER_NOT_FOUND, "用户已被删除");
         }
 
         // 3. 校验邮箱唯一性（如果修改了邮箱）
         if (StringUtils.hasText(request.getEmail()) && !request.getEmail().equals(user.getEmail())) {
             if (existsByEmail(request.getEmail())) {
-                throw new BusinessException(ResultCode.EMAIL_EXISTS);
+                throw new BusinessException(ResultCode.EMAIL_EXISTS, "邮箱已被注册");
             }
         }
 
@@ -180,7 +180,7 @@ public class UserServiceImpl implements IUserService {
     public void deleteUser(Long userId) {
         // 1. 查询用户
         SysUser user = userMapper.selectById(userId);
-        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND, "用户不存在");
 
         // 2. 逻辑删除
         SysUser updateEntity = new SysUser();
@@ -192,7 +192,7 @@ public class UserServiceImpl implements IUserService {
     }
 
     @Override
-    public PageResult<UserVO> listUsers(UserQueryRequest request) {
+    public PageResult listUsers(UserQueryRequest request) {
         // 1. 构建查询条件
         LambdaQueryWrapper<SysUser> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysUser::getDeleted, 0);
@@ -238,13 +238,7 @@ public class UserServiceImpl implements IUserService {
                 .collect(Collectors.toList());
 
         // 4. 构建分页结果
-        return PageResult.<UserVO>builder()
-                .total(result.getTotal())
-                .pageNum(request.getPageNum())
-                .pageSize(request.getPageSize())
-                .pages(result.getPages())
-                .data(voList)
-                .build();
+        return PageResult.of(voList, result.getTotal(), Long.valueOf(request.getPageNum()), Long.valueOf(request.getPageSize()));
     }
 
     @Override

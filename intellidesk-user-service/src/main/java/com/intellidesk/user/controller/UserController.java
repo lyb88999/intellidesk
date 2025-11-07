@@ -74,7 +74,7 @@ public class UserController {
      * @return 响应
      */
     @PutMapping("/{id}")
-    public Result<Void> updateUser(
+    public Result<String> updateUser(
             @PathVariable("id") Long id,
             @Valid @RequestBody UserUpdateRequest request) {
         log.info("更新用户请求: userId={}", id);
@@ -89,7 +89,7 @@ public class UserController {
      * @return 响应
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deleteUser(@PathVariable("id") Long id) {
+    public Result<String> deleteUser(@PathVariable("id") Long id) {
         log.info("删除用户请求: userId={}", id);
         userService.deleteUser(id);
         return Result.success("删除成功");

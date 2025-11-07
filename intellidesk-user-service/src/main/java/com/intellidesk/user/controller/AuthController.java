@@ -45,7 +45,7 @@ public class AuthController {
      * @return 响应
      */
     @PostMapping("/logout")
-    public Result<Void> logout(@RequestHeader("Authorization") String authorization) {
+    public Result<String> logout(@RequestHeader("Authorization") String authorization) {
         String token = authorization.replace("Bearer ", "");
         authService.logout(token);
         return Result.success("登出成功");
@@ -84,7 +84,7 @@ public class AuthController {
      * @return 响应
      */
     @PostMapping("/change-password")
-    public Result<Void> changePassword(
+    public Result<String> changePassword(
             @RequestHeader(value = SecurityConstants.USER_ID, required = false) Long userId,
             @Valid @RequestBody ChangePasswordRequest request) {
         if (userId == null) {

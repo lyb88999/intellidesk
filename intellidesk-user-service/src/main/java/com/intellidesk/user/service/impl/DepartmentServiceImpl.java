@@ -3,9 +3,10 @@ package com.intellidesk.user.service.impl;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.intellidesk.common.core.domain.PageResult;
-import com.intellidesk.common.core.enums.ResultCode;
+
+import com.intellidesk.common.core.domain.ResultCode;
 import com.intellidesk.common.core.exception.BusinessException;
-import com.intellidesk.common.core.util.Assert;
+import com.intellidesk.common.core.utils.Assert;
 import com.intellidesk.user.domain.dto.DepartmentCreateRequest;
 import com.intellidesk.user.domain.dto.DepartmentQueryRequest;
 import com.intellidesk.user.domain.dto.DepartmentUpdateRequest;
@@ -90,7 +91,7 @@ public class DepartmentServiceImpl implements IDepartmentService {
 
         // 1. 查询部门是否存在
         SysDepartment existingDept = departmentMapper.selectById(request.getId());
-        Assert.notNull(existingDept, ResultCode.DEPARTMENT_NOT_FOUND);
+        Assert.notNull(existingDept, ResultCode.DEPARTMENT_NOT_FOUND, "部门不存在");
 
         // 2. 检查是否修改为自己的子部门（防止循环引用）
         if (request.getParentId() != null && request.getParentId() > 0) {
@@ -131,7 +132,7 @@ public class DepartmentServiceImpl implements IDepartmentService {
 
         // 1. 查询部门是否存在
         SysDepartment department = departmentMapper.selectById(id);
-        Assert.notNull(department, ResultCode.DEPARTMENT_NOT_FOUND);
+        Assert.notNull(department, ResultCode.DEPARTMENT_NOT_FOUND, "部门不存在");
 
         // 2. 检查是否有子部门
         LambdaQueryWrapper<SysDepartment> childWrapper = new LambdaQueryWrapper<>();
@@ -143,7 +144,7 @@ public class DepartmentServiceImpl implements IDepartmentService {
 
         // 3. 检查是否有用户
         LambdaQueryWrapper<SysUser> userWrapper = new LambdaQueryWrapper<>();
-        userWrapper.eq(SysUser::getDepartmentId, id);
+        userWrapper.eq(SysUser::getDeptId, id);
         userWrapper.eq(SysUser::getDeleted, 0);
         if (userMapper.selectCount(userWrapper) > 0) {
             throw new BusinessException(ResultCode.BAD_REQUEST, "该部门下还有用户，不能删除");
@@ -158,12 +159,12 @@ public class DepartmentServiceImpl implements IDepartmentService {
     public DepartmentVO getDepartmentById(Long id) {
         log.info("查询部门详情: id={}", id);
         SysDepartment department = departmentMapper.selectById(id);
-        Assert.notNull(department, ResultCode.DEPARTMENT_NOT_FOUND);
+        Assert.notNull(department, ResultCode.DEPARTMENT_NOT_FOUND, "部门不存在");
         return convertToVO(department);
     }
 
     @Override
-    public PageResult<DepartmentVO> getDepartmentList(DepartmentQueryRequest request) {
+    public PageResult getDepartmentList(DepartmentQueryRequest request) {
         log.info("查询部门列表: request={}", request);
 
         // 构建查询条件
@@ -205,8 +206,8 @@ public class DepartmentServiceImpl implements IDepartmentService {
                 }
             });
         }
+        return PageResult.of(voList, result.getTotal(), request.getPageNum(), request.getPageSize());
 
-        return PageResult.of(result.getTotal(), voList);
     }
 
     @Override

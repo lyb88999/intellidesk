@@ -45,7 +45,7 @@ public class AuthServiceImpl implements IAuthService {
         wrapper.eq(SysUser::getUsername, username);
         SysUser user = userMapper.selectOne(wrapper);
 
-        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND, "用户不存在");
 
         // 3. 验证密码
         if (!PasswordUtils.matches(password, user.getPassword())) {
@@ -115,7 +115,7 @@ public class AuthServiceImpl implements IAuthService {
 
         // 3. 查询用户
         SysUser user = userMapper.selectById(Long.parseLong(userId));
-        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND, "用户不存在");
 
         // 4. 查询角色和权限
         Set<String> roles = userMapper.selectRoleCodesByUserId(user.getId());
@@ -180,7 +180,7 @@ public class AuthServiceImpl implements IAuthService {
     public void changePassword(Long userId, com.intellidesk.user.domain.dto.ChangePasswordRequest request) {
         // 1. 查询用户
         SysUser user = userMapper.selectById(userId);
-        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND, "用户不存在");
 
         // 2. 验证旧密码
         if (!PasswordUtils.matches(request.getOldPassword(), user.getPassword())) {

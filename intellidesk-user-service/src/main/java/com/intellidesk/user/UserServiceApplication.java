@@ -16,7 +16,7 @@ import org.springframework.cloud.openfeign.EnableFeignClients;
 public class UserServiceApplication {
 
     public static void main(String[] args) {
-        SpringApplication.run(UserServiceApplication.java, args);
+        SpringApplication.run(UserServiceApplication.class, args);
         System.out.println("========================================");
         System.out.println("   IntelliDesk User Service 启动成功！");
         System.out.println("========================================");

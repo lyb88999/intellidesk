@@ -60,7 +60,7 @@ public class RoleController {
      * @return 响应
      */
     @PutMapping("/{id}")
-    public Result<Void> updateRole(
+    public Result<String> updateRole(
             @PathVariable("id") Long id,
             @Valid @RequestBody RoleUpdateRequest request) {
         log.info("更新角色请求: roleId={}", id);
@@ -75,7 +75,7 @@ public class RoleController {
      * @return 响应
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deleteRole(@PathVariable("id") Long id) {
+    public Result<String> deleteRole(@PathVariable("id") Long id) {
         log.info("删除角色请求: roleId={}", id);
         roleService.deleteRole(id);
         return Result.success("删除成功");

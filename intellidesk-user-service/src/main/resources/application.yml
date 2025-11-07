@@ -5,6 +5,10 @@ spring:
   application:
     name: intellidesk-user-service
 
+  config:
+    import: nacos:${NACOS_SERVER_ADDR:localhost:8848}?namespace=${NACOS_NAMESPACE:public}
+
+
   profiles:
     active: dev
 
@@ -14,11 +18,18 @@ spring:
         server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
         namespace: ${NACOS_NAMESPACE:public}
         group: DEFAULT_GROUP
+        username: nacos
+        password: nacos
       config:
         server-addr: ${NACOS_SERVER_ADDR:localhost:8848}
         namespace: ${NACOS_NAMESPACE:public}
         file-extension: yaml
         group: DEFAULT_GROUP
+        username: nacos
+        password: nacos
+        shared-configs:
+          - data-id: common-config.yaml
+            refresh: true
 
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
@@ -38,18 +49,14 @@ spring:
       test-on-borrow: false
       test-on-return: false
 
-  redis:
-    host: ${REDIS_HOST:localhost}
-    port: ${REDIS_PORT:6379}
-    password: ${REDIS_PASSWORD:}
-    database: 0
-    timeout: 3000ms
-    lettuce:
-      pool:
-        max-active: 8
-        max-idle: 8
-        min-idle: 0
-        max-wait: -1ms
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:redis123}
+      database: 0
+      timeout: 3000ms
 
 # MyBatis-Plus 配置
 mybatis-plus:

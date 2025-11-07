@@ -32,10 +32,10 @@ public class DepartmentQueryRequest implements Serializable {
     /**
      * 页码
      */
-    private Integer pageNum = 1;
+    private Long pageNum = 1L;
 
     /**
      * 每页大小
      */
-    private Integer pageSize = 10;
+    private Long pageSize = 10L;
 }

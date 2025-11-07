@@ -58,7 +58,7 @@ public class PermissionController {
      * @return 响应
      */
     @PutMapping("/{id}")
-    public Result<Void> updatePermission(
+    public Result<String> updatePermission(
             @PathVariable("id") Long id,
             @Valid @RequestBody PermissionUpdateRequest request) {
         log.info("更新权限请求: permissionId={}", id);
@@ -73,7 +73,7 @@ public class PermissionController {
      * @return 响应
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deletePermission(@PathVariable("id") Long id) {
+    public Result<String> deletePermission(@PathVariable("id") Long id) {
         log.info("删除权限请求: permissionId={}", id);
         permissionService.deletePermission(id);
         return Result.success("删除成功");

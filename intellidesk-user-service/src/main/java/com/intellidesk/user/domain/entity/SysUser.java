@@ -75,6 +75,11 @@ public class SysUser implements Serializable {
     private Long deptId;
 
     /**
+     * 技能组ID
+     */
+    private Long skillGroupId;
+
+    /**
      * 创建时间
      */
     @TableField(fill = FieldFill.INSERT)

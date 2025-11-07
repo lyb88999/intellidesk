@@ -47,7 +47,7 @@ public class DepartmentController {
      * @return 响应
      */
     @PutMapping
-    public Result<Void> updateDepartment(@Valid @RequestBody DepartmentUpdateRequest request) {
+    public Result<String> updateDepartment(@Valid @RequestBody DepartmentUpdateRequest request) {
         log.info("更新部门请求: id={}", request.getId());
         departmentService.updateDepartment(request);
         return Result.success("更新成功");
@@ -60,7 +60,7 @@ public class DepartmentController {
      * @return 响应
      */
     @DeleteMapping("/{id}")
-    public Result<Void> deleteDepartment(@PathVariable Long id) {
+    public Result<String> deleteDepartment(@PathVariable Long id) {
         log.info("删除部门请求: id={}", id);
         departmentService.deleteDepartment(id);
         return Result.success("删除成功");

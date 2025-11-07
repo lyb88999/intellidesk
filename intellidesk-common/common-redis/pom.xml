@@ -47,6 +47,14 @@
             <artifactId>lombok</artifactId>
             <optional>true</optional>
         </dependency>
+
+        <!-- common-security -->
+        <dependency>
+            <groupId>com.intellidesk</groupId>
+            <artifactId>common-security</artifactId>
+            <version>1.0.0-SNAPSHOT</version>
+            <scope>compile</scope>
+        </dependency>
     </dependencies>
 
 </project>

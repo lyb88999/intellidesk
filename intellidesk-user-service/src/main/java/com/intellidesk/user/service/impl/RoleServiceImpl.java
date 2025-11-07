@@ -149,7 +149,7 @@ public class RoleServiceImpl implements IRoleService {
     }
 
     @Override
-    public PageResult<RoleVO> listRoles(RoleQueryRequest request) {
+    public PageResult listRoles(RoleQueryRequest request) {
         // 1. 构建查询条件
         LambdaQueryWrapper<SysRole> wrapper = new LambdaQueryWrapper<>();
         wrapper.eq(SysRole::getDeleted, 0);
@@ -180,13 +180,7 @@ public class RoleServiceImpl implements IRoleService {
                 .collect(Collectors.toList());
 
         // 4. 构建分页结果
-        return PageResult.<RoleVO>builder()
-                .total(result.getTotal())
-                .pageNum(request.getPageNum())
-                .pageSize(request.getPageSize())
-                .pages(result.getPages())
-                .data(voList)
-                .build();
+        return PageResult.of(voList, result.getTotal(), Long.valueOf(request.getPageNum()), Long.valueOf(request.getPageSize()));
     }
 
     @Override
