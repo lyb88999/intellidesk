@@ -74,6 +74,12 @@
             <version>${project.version}</version>
         </dependency>
 
+        <!-- MyBatis Plus (显式依赖，确保编译时可用) -->
+        <dependency>
+            <groupId>com.baomidou</groupId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
+        </dependency>
+
         <!-- Common Redis -->
         <dependency>
             <groupId>com.intellidesk</groupId>
