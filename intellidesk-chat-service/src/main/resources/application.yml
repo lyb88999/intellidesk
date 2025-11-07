@@ -97,3 +97,10 @@ websocket:
   allowed-origins: "*"
   heartbeat-interval: 30000  # 心跳间隔（毫秒）
   session-timeout: 600000    # 会话超时（毫秒）
+
+# AI 集成配置
+chat:
+  ai:
+    enabled: true  # 是否启用AI自动回复
+    auto-reply-customer: true  # 客户消息是否自动触发AI回复
+    transfer-on-ai-request: true  # AI判断需要转人工时自动分配客服
