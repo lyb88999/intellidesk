@@ -1,0 +1,50 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: intellidesk-ai-service
+
+  # Redis 配置
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:123456}
+      database: 3
+      timeout: 5000ms
+      lettuce:
+        pool:
+          max-active: 50
+          max-idle: 20
+          min-idle: 5
+          max-wait: 3000ms
+
+# AI 配置
+ai:
+  # 智谱AI配置
+  zhipu:
+    api-key: ${ZHIPU_API_KEY:your-api-key-here}
+    base-url: https://open.bigmodel.cn/api/paas/v4
+    model: glm-4-flash  # 免费模型：glm-4-flash, 付费模型：glm-4
+    temperature: 0.7
+    max-tokens: 2000
+    timeout: 30000  # 30秒超时
+
+  # 对话上下文配置
+  context:
+    max-history: 10  # 最多保留10轮对话
+    expire-seconds: 1800  # 30分钟过期
+
+  # 意图识别配置
+  intent:
+    enabled: true
+    confidence-threshold: 0.6  # 置信度阈值
+
+# 日志配置
+logging:
+  level:
+    com.intellidesk.ai: DEBUG
+    org.springframework.web: INFO
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{50} - %msg%n"
