@@ -1,0 +1,387 @@
+version: '3.8'
+
+# IntelliDesk 智能客服与工单系统 - Docker Compose 配置
+# 一键启动所有服务和依赖中间件
+
+services:
+  # ==================== 基础设施 - 数据库 ====================
+  mysql:
+    image: mysql:8.0
+    container_name: intellidesk-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: intellidesk_root_2024
+      MYSQL_DATABASE: nacos
+      TZ: Asia/Shanghai
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./scripts/schema:/docker-entrypoint-initdb.d:ro
+      - ./docker/mysql/conf:/etc/mysql/conf.d:ro
+    ports:
+      - "3306:3306"
+    command:
+      - --character-set-server=utf8mb4
+      - --collation-server=utf8mb4_unicode_ci
+      - --default-authentication-plugin=mysql_native_password
+      - --max_connections=1000
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p$$MYSQL_ROOT_PASSWORD"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ==================== 基础设施 - 缓存 ====================
+  redis:
+    image: redis:7.2-alpine
+    container_name: intellidesk-redis
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    volumes:
+      - redis-data:/data
+      - ./docker/redis/redis.conf:/usr/local/etc/redis/redis.conf:ro
+    ports:
+      - "6379:6379"
+    command: redis-server /usr/local/etc/redis/redis.conf
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 3
+
+  # ==================== 基础设施 - 消息队列 ====================
+  rabbitmq:
+    image: rabbitmq:3.12-management-alpine
+    container_name: intellidesk-rabbitmq
+    restart: always
+    environment:
+      RABBITMQ_DEFAULT_USER: intellidesk
+      RABBITMQ_DEFAULT_PASS: intellidesk_mq_2024
+      RABBITMQ_DEFAULT_VHOST: /
+      TZ: Asia/Shanghai
+    volumes:
+      - rabbitmq-data:/var/lib/rabbitmq
+      - ./docker/rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    ports:
+      - "5672:5672"    # AMQP 端口
+      - "15672:15672"  # 管理界面
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ==================== 基础设施 - 搜索引擎 ====================
+  elasticsearch:
+    image: elasticsearch:8.11.0
+    container_name: intellidesk-elasticsearch
+    restart: always
+    environment:
+      - discovery.type=single-node
+      - xpack.security.enabled=false
+      - "ES_JAVA_OPTS=-Xms1g -Xmx1g"
+      - TZ=Asia/Shanghai
+    volumes:
+      - es-data:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200/_cluster/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ==================== 基础设施 - 向量数据库 ====================
+  milvus-etcd:
+    image: quay.io/coreos/etcd:v3.5.5
+    container_name: intellidesk-milvus-etcd
+    environment:
+      - ETCD_AUTO_COMPACTION_MODE=revision
+      - ETCD_AUTO_COMPACTION_RETENTION=1000
+      - ETCD_QUOTA_BACKEND_BYTES=4294967296
+      - ETCD_SNAPSHOT_COUNT=50000
+    volumes:
+      - milvus-etcd-data:/etcd
+    command: etcd -advertise-client-urls=http://127.0.0.1:2379 -listen-client-urls http://0.0.0.0:2379 --data-dir /etcd
+    networks:
+      - intellidesk-network
+
+  milvus-minio:
+    image: minio/minio:RELEASE.2023-03-20T20-16-18Z
+    container_name: intellidesk-milvus-minio
+    environment:
+      MINIO_ACCESS_KEY: minioadmin
+      MINIO_SECRET_KEY: minioadmin
+    volumes:
+      - milvus-minio-data:/minio_data
+    command: minio server /minio_data
+    ports:
+      - "9001:9000"
+      - "9091:9091"
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+
+  milvus-standalone:
+    image: milvusdb/milvus:v2.3.3
+    container_name: intellidesk-milvus
+    restart: always
+    depends_on:
+      - milvus-etcd
+      - milvus-minio
+    environment:
+      ETCD_ENDPOINTS: milvus-etcd:2379
+      MINIO_ADDRESS: milvus-minio:9000
+    volumes:
+      - milvus-data:/var/lib/milvus
+    ports:
+      - "19530:19530"
+      - "9092:9091"
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9091/healthz"]
+      interval: 30s
+      timeout: 20s
+      retries: 5
+
+  # ==================== 基础设施 - 注册中心 & 配置中心 ====================
+  nacos:
+    image: nacos/nacos-server:v2.2.3-slim
+    container_name: intellidesk-nacos
+    restart: always
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      MODE: standalone
+      PREFER_HOST_MODE: hostname
+      SPRING_DATASOURCE_PLATFORM: mysql
+      MYSQL_SERVICE_HOST: mysql
+      MYSQL_SERVICE_PORT: 3306
+      MYSQL_SERVICE_DB_NAME: nacos
+      MYSQL_SERVICE_USER: root
+      MYSQL_SERVICE_PASSWORD: intellidesk_root_2024
+      NACOS_AUTH_ENABLE: "true"
+      NACOS_AUTH_TOKEN: SecretKey012345678901234567890123456789012345678901234567890123456789
+      NACOS_AUTH_IDENTITY_KEY: nacos
+      NACOS_AUTH_IDENTITY_VALUE: nacos
+      JVM_XMS: 512m
+      JVM_XMX: 512m
+      TZ: Asia/Shanghai
+    volumes:
+      - nacos-logs:/home/nacos/logs
+    ports:
+      - "8848:8848"
+      - "9848:9848"
+      - "9849:9849"
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8848/nacos/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 10
+
+  # ==================== 监控 - SkyWalking OAP ====================
+  skywalking-oap:
+    image: apache/skywalking-oap-server:9.6.0
+    container_name: intellidesk-skywalking-oap
+    restart: always
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      SW_STORAGE: elasticsearch
+      SW_STORAGE_ES_CLUSTER_NODES: elasticsearch:9200
+      SW_CORE_METRICS_DATA_TTL: 7
+      SW_CORE_RECORD_DATA_TTL: 7
+      TZ: Asia/Shanghai
+    ports:
+      - "11800:11800"
+      - "12800:12800"
+    networks:
+      - intellidesk-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:12800/internal/l7check || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+
+  # ==================== 监控 - SkyWalking UI ====================
+  skywalking-ui:
+    image: apache/skywalking-ui:9.6.0
+    container_name: intellidesk-skywalking-ui
+    restart: always
+    depends_on:
+      skywalking-oap:
+        condition: service_healthy
+    environment:
+      SW_OAP_ADDRESS: http://skywalking-oap:12800
+      TZ: Asia/Shanghai
+    ports:
+      - "8180:8080"
+    networks:
+      - intellidesk-network
+
+  # ==================== 监控 - Sentinel Dashboard ====================
+  sentinel-dashboard:
+    image: bladex/sentinel-dashboard:1.8.6
+    container_name: intellidesk-sentinel
+    restart: always
+    environment:
+      TZ: Asia/Shanghai
+    ports:
+      - "8858:8858"
+    networks:
+      - intellidesk-network
+
+  # ==================== 监控 - Prometheus ====================
+  prometheus:
+    image: prom/prometheus:v2.48.0
+    container_name: intellidesk-prometheus
+    restart: always
+    volumes:
+      - ./docker/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus-data:/prometheus
+    ports:
+      - "9090:9090"
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+      - '--storage.tsdb.retention.time=15d'
+    networks:
+      - intellidesk-network
+
+  # ==================== 监控 - Grafana ====================
+  grafana:
+    image: grafana/grafana:10.2.2
+    container_name: intellidesk-grafana
+    restart: always
+    depends_on:
+      - prometheus
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: intellidesk_grafana_2024
+      GF_INSTALL_PLUGINS: ""
+      TZ: Asia/Shanghai
+    volumes:
+      - grafana-data:/var/lib/grafana
+      - ./docker/grafana/dashboards:/etc/grafana/provisioning/dashboards:ro
+      - ./docker/grafana/datasources:/etc/grafana/provisioning/datasources:ro
+    ports:
+      - "3000:3000"
+    networks:
+      - intellidesk-network
+
+  # ==================== 日志 - Kibana ====================
+  kibana:
+    image: kibana:8.11.0
+    container_name: intellidesk-kibana
+    restart: always
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+      I18N_LOCALE: zh-CN
+      TZ: Asia/Shanghai
+    ports:
+      - "5601:5601"
+    networks:
+      - intellidesk-network
+
+  # ==================== 前端 - Nginx ====================
+  # nginx:
+  #   image: nginx:1.25-alpine
+  #   container_name: intellidesk-nginx
+  #   restart: always
+  #   volumes:
+  #     - ./intellidesk-web/dist:/usr/share/nginx/html:ro
+  #     - ./docker/nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+  #     - ./docker/nginx/conf.d:/etc/nginx/conf.d:ro
+  #   ports:
+  #     - "80:80"
+  #     - "443:443"
+  #   networks:
+  #     - intellidesk-network
+  #   depends_on:
+  #     - gateway
+
+  # ==================== 微服务 - API Gateway ====================
+  # gateway:
+  #   build:
+  #     context: ./intellidesk-gateway
+  #     dockerfile: Dockerfile
+  #   container_name: intellidesk-gateway
+  #   restart: always
+  #   depends_on:
+  #     nacos:
+  #       condition: service_healthy
+  #     redis:
+  #       condition: service_healthy
+  #   environment:
+  #     SPRING_PROFILES_ACTIVE: docker
+  #     NACOS_SERVER_ADDR: nacos:8848
+  #     NACOS_NAMESPACE: public
+  #     REDIS_HOST: redis
+  #     REDIS_PORT: 6379
+  #     SKYWALKING_COLLECTOR: skywalking-oap:11800
+  #     TZ: Asia/Shanghai
+  #   ports:
+  #     - "8080:8080"
+  #   networks:
+  #     - intellidesk-network
+  #   healthcheck:
+  #     test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+  #     interval: 30s
+  #     timeout: 10s
+  #     retries: 5
+
+  # 其他微服务配置类似，暂时注释，待服务开发完成后启用
+  # user-service:
+  #   build: ./intellidesk-user-service
+  #   ...
+  #
+  # chat-service:
+  #   build: ./intellidesk-chat-service
+  #   ...
+
+networks:
+  intellidesk-network:
+    driver: bridge
+
+volumes:
+  mysql-data:
+    driver: local
+  redis-data:
+    driver: local
+  rabbitmq-data:
+    driver: local
+  es-data:
+    driver: local
+  milvus-etcd-data:
+    driver: local
+  milvus-minio-data:
+    driver: local
+  milvus-data:
+    driver: local
+  nacos-logs:
+    driver: local
+  prometheus-data:
+    driver: local
+  grafana-data:
+    driver: local
