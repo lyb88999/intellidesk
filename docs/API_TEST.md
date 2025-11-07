@@ -40,6 +40,109 @@ curl http://localhost:8081/health
 
 ---
 
+## 🔐 JWT 认证说明
+
+### 认证流程
+
+IntelliDesk 使用 JWT (JSON Web Token) 进行用户认证和授权。
+
+```
+1. 用户登录
+   ↓
+2. 后端验证用户名密码
+   ↓
+3. 生成 JWT Token（Access Token + Refresh Token）
+   ↓
+4. 返回 Token 给客户端
+   ↓
+5. 客户端保存 Token（LocalStorage/SessionStorage）
+   ↓
+6. 后续请求携带 Token
+   ↓
+7. 网关验证 Token 有效性
+   ↓
+8. 解析用户信息并传递给下游服务
+   ↓
+9. 下游服务处理业务逻辑
+```
+
+### 如何携带 Token
+
+所有受保护的接口都需要在请求头中携带 Token：
+
+```
+Authorization: Bearer {accessToken}
+```
+
+**示例**:
+```bash
+curl http://localhost:8080/api/user/health/info \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+### 白名单路径
+
+以下路径不需要认证即可访问：
+
+- `/api/user/auth/login` - 用户登录
+- `/api/user/auth/register` - 用户注册
+- `/api/user/health` - 健康检查
+- `/actuator/**` - 监控端点
+- `/doc.html` - API 文档
+- `/static/**` - 静态资源
+
+### Token 有效期
+
+- **Access Token**: 2 小时
+- **Refresh Token**: 7 天
+
+### 错误响应
+
+#### 未认证（缺少 Token）
+```json
+{
+  "code": 401,
+  "message": "未认证，请先登录",
+  "timestamp": "2025-01-15T10:00:00"
+}
+```
+
+#### Token 无效
+```json
+{
+  "code": 1007,
+  "message": "Token 无效",
+  "timestamp": "2025-01-15T10:00:00"
+}
+```
+
+#### Token 已过期
+```json
+{
+  "code": 1008,
+  "message": "Token 已过期",
+  "timestamp": "2025-01-15T10:00:00"
+}
+```
+
+### 刷新 Token
+
+当 Access Token 即将过期时，可以使用 Refresh Token 刷新：
+
+```bash
+curl -X POST "http://localhost:8080/api/user/auth/refresh?refreshToken={refreshToken}"
+```
+
+### 安全建议
+
+1. **HTTPS**: 生产环境必须使用 HTTPS
+2. **Token 存储**: 避免存储在 Cookie 中（易受 XSS 攻击）
+3. **Token 过期**: 及时刷新 Token
+4. **敏感操作**: 重要操作需要重新验证密码
+5. **登出**: 登出时清除本地 Token
+
+---
+
 ## 📝 认证API
 
 ### 1. 用户登录
