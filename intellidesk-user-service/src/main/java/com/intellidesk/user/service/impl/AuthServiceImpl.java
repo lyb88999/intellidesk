@@ -5,6 +5,7 @@ import com.intellidesk.common.core.constant.SecurityConstants;
 import com.intellidesk.common.core.domain.ResultCode;
 import com.intellidesk.common.core.exception.BusinessException;
 import com.intellidesk.common.core.utils.Assert;
+import com.intellidesk.common.redis.service.TokenBlacklistService;
 import com.intellidesk.common.security.utils.JwtUtils;
 import com.intellidesk.common.security.utils.PasswordUtils;
 import com.intellidesk.user.domain.dto.LoginRequest;
@@ -31,6 +32,7 @@ import java.util.Set;
 public class AuthServiceImpl implements IAuthService {
 
     private final SysUserMapper userMapper;
+    private final TokenBlacklistService tokenBlacklistService;
 
     @Override
     public LoginResponse login(LoginRequest loginRequest) {
@@ -93,8 +95,12 @@ public class AuthServiceImpl implements IAuthService {
 
     @Override
     public void logout(String token) {
-        // TODO: 将Token加入黑名单（Redis）
-        log.info("用户登出成功");
+        // 将 Token 加入黑名单
+        tokenBlacklistService.addToBlacklist(token);
+
+        // 获取用户信息
+        String userId = JwtUtils.getUserIdFromToken(token);
+        log.info("用户登出成功: userId={}", userId);
     }
 
     @Override

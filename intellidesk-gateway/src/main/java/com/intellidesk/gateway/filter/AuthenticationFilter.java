@@ -5,6 +5,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.intellidesk.common.core.constant.SecurityConstants;
 import com.intellidesk.common.core.domain.Result;
 import com.intellidesk.common.core.domain.ResultCode;
+import com.intellidesk.common.redis.service.TokenBlacklistService;
 import com.intellidesk.common.security.utils.JwtUtils;
 import com.intellidesk.gateway.config.AuthProperties;
 import io.jsonwebtoken.Claims;
@@ -37,6 +38,7 @@ import java.nio.charset.StandardCharsets;
 public class AuthenticationFilter implements GlobalFilter, Ordered {
 
     private final AuthProperties authProperties;
+    private final TokenBlacklistService tokenBlacklistService;
     private final ObjectMapper objectMapper = new ObjectMapper();
     private final AntPathMatcher pathMatcher = new AntPathMatcher();
 
@@ -69,6 +71,12 @@ public class AuthenticationFilter implements GlobalFilter, Ordered {
         try {
             if (!JwtUtils.validateToken(token)) {
                 log.warn("Token 无效: {}", token.substring(0, Math.min(20, token.length())));
+                return unauthorized(exchange.getResponse(), ResultCode.TOKEN_INVALID);
+            }
+
+            // 检查 Token 是否在黑名单中
+            if (tokenBlacklistService.isBlacklisted(token)) {
+                log.warn("Token 已失效（在黑名单中）: {}", token.substring(0, Math.min(20, token.length())));
                 return unauthorized(exchange.getResponse(), ResultCode.TOKEN_INVALID);
             }
 

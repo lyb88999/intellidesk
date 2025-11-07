@@ -171,6 +171,17 @@ public class JwtUtils {
     }
 
     /**
+     * 获取 Token 过期时间戳（毫秒）
+     *
+     * @param token Token
+     * @return 过期时间戳
+     */
+    public static long getExpireTime(String token) {
+        Date expirationDate = getExpirationDateFromToken(token);
+        return expirationDate.getTime();
+    }
+
+    /**
      * 刷新 Token（延长有效期）
      *
      * @param token Token
