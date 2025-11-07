@@ -1,6 +1,8 @@
 package com.intellidesk.user.service;
 
+import com.intellidesk.user.domain.dto.ChangePasswordRequest;
 import com.intellidesk.user.domain.dto.LoginRequest;
+import com.intellidesk.user.domain.dto.RegisterRequest;
 import com.intellidesk.user.domain.vo.LoginResponse;
 
 /**
@@ -32,4 +34,20 @@ public interface IAuthService {
      * @return 新的访问令牌
      */
     String refreshToken(String refreshToken);
+
+    /**
+     * 用户注册
+     *
+     * @param registerRequest 注册请求
+     * @return 用户ID
+     */
+    Long register(RegisterRequest registerRequest);
+
+    /**
+     * 修改密码
+     *
+     * @param userId  用户ID
+     * @param request 修改密码请求
+     */
+    void changePassword(Long userId, ChangePasswordRequest request);
 }

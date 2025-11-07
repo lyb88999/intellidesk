@@ -131,4 +131,68 @@ public class AuthServiceImpl implements IAuthService {
 
         return JwtUtils.generateAccessToken(user.getId().toString(), claims);
     }
+
+    @Override
+    public Long register(com.intellidesk.user.domain.dto.RegisterRequest registerRequest) {
+        // 1. 校验用户名唯一性
+        LambdaQueryWrapper<SysUser> usernameWrapper = new LambdaQueryWrapper<>();
+        usernameWrapper.eq(SysUser::getUsername, registerRequest.getUsername());
+        usernameWrapper.eq(SysUser::getDeleted, 0);
+        if (userMapper.selectCount(usernameWrapper) > 0) {
+            throw new BusinessException(ResultCode.USERNAME_EXISTS);
+        }
+
+        // 2. 校验邮箱唯一性
+        LambdaQueryWrapper<SysUser> emailWrapper = new LambdaQueryWrapper<>();
+        emailWrapper.eq(SysUser::getEmail, registerRequest.getEmail());
+        emailWrapper.eq(SysUser::getDeleted, 0);
+        if (userMapper.selectCount(emailWrapper) > 0) {
+            throw new BusinessException(ResultCode.EMAIL_EXISTS);
+        }
+
+        // 3. 校验手机号唯一性
+        LambdaQueryWrapper<SysUser> phoneWrapper = new LambdaQueryWrapper<>();
+        phoneWrapper.eq(SysUser::getPhone, registerRequest.getPhone());
+        phoneWrapper.eq(SysUser::getDeleted, 0);
+        if (userMapper.selectCount(phoneWrapper) > 0) {
+            throw new BusinessException(ResultCode.PHONE_EXISTS);
+        }
+
+        // 4. 创建用户
+        SysUser user = SysUser.builder()
+                .username(registerRequest.getUsername())
+                .password(PasswordUtils.encode(registerRequest.getPassword()))
+                .nickname(registerRequest.getNickname())
+                .email(registerRequest.getEmail())
+                .phone(registerRequest.getPhone())
+                .userType(1) // 默认为客户
+                .status(1)   // 默认启用
+                .deleted(0)
+                .build();
+
+        userMapper.insert(user);
+        log.info("用户注册成功: userId={}, username={}", user.getId(), user.getUsername());
+
+        return user.getId();
+    }
+
+    @Override
+    public void changePassword(Long userId, com.intellidesk.user.domain.dto.ChangePasswordRequest request) {
+        // 1. 查询用户
+        SysUser user = userMapper.selectById(userId);
+        Assert.notNull(user, ResultCode.USER_NOT_FOUND);
+
+        // 2. 验证旧密码
+        if (!PasswordUtils.matches(request.getOldPassword(), user.getPassword())) {
+            throw new BusinessException(ResultCode.BAD_REQUEST, "旧密码错误");
+        }
+
+        // 3. 更新密码
+        SysUser updateEntity = new SysUser();
+        updateEntity.setId(userId);
+        updateEntity.setPassword(PasswordUtils.encode(request.getNewPassword()));
+        userMapper.updateById(updateEntity);
+
+        log.info("修改密码成功: userId={}", userId);
+    }
 }

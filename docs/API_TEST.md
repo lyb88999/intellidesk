@@ -808,15 +808,686 @@ chmod +x scripts/test-user.sh
 
 ---
 
+## 👤 角色管理API
+
+### 1. 查询角色详情
+
+**接口**: `GET /api/user/role/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `id`: 角色ID
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/role/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": 1,
+    "roleName": "超级管理员",
+    "roleCode": "ROLE_SUPER_ADMIN",
+    "description": "系统超级管理员，拥有所有权限",
+    "status": 1,
+    "sort": 0,
+    "permissions": ["user:create", "user:update", "user:delete"],
+    "createTime": "2025-01-15T10:00:00",
+    "updateTime": "2025-01-15T10:00:00"
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 2. 创建角色
+
+**接口**: `POST /api/user/role`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**请求体**:
+```json
+{
+  "roleName": "客服主管",
+  "roleCode": "ROLE_CUSTOMER_SERVICE_MANAGER",
+  "description": "客服主管角色",
+  "status": 1,
+  "sort": 10,
+  "permissionIds": [1, 2, 3]
+}
+```
+
+**字段说明**:
+- `roleName`: 角色名称（必填，最多50字符）
+- `roleCode`: 角色编码（必填，最多100字符，只能包含大写字母和下划线）
+- `description`: 角色描述（选填，最多200字符）
+- `status`: 状态（选填，0-禁用 1-正常，默认1）
+- `sort`: 排序（选填，默认0）
+- `permissionIds`: 权限ID列表（选填）
+
+**cURL 示例**:
+```bash
+curl -X POST http://localhost:8080/api/user/role \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "roleName": "客服主管",
+    "roleCode": "ROLE_CUSTOMER_SERVICE_MANAGER",
+    "description": "客服主管角色",
+    "permissionIds": [1, 2, 3]
+  }'
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": 2,
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**失败响应** - 角色编码已存在:
+```json
+{
+  "code": 400,
+  "message": "角色编码已存在",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 3. 更新角色
+
+**接口**: `PUT /api/user/role/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**路径参数**:
+- `id`: 角色ID
+
+**请求体**:
+```json
+{
+  "roleName": "高级客服主管",
+  "description": "高级客服主管角色",
+  "status": 1,
+  "sort": 5,
+  "permissionIds": [1, 2, 3, 4]
+}
+```
+
+**字段说明**: 所有字段均为选填，只更新提供的字段
+
+**cURL 示例**:
+```bash
+curl -X PUT http://localhost:8080/api/user/role/2 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "roleName": "高级客服主管",
+    "permissionIds": [1, 2, 3, 4]
+  }'
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 4. 删除角色
+
+**接口**: `DELETE /api/user/role/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `id`: 角色ID
+
+**说明**: 采用逻辑删除
+
+**cURL 示例**:
+```bash
+curl -X DELETE http://localhost:8080/api/user/role/2 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 5. 分页查询角色列表
+
+**接口**: `GET /api/user/role/list`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**查询参数**:
+- `roleName`: 角色名称（模糊查询，选填）
+- `roleCode`: 角色编码（模糊查询，选填）
+- `status`: 状态（选填，0-禁用 1-正常）
+- `pageNum`: 页码（默认1）
+- `pageSize`: 每页大小（默认10）
+
+**cURL 示例**:
+```bash
+# 查询所有角色
+curl "http://localhost:8080/api/user/role/list?pageNum=1&pageSize=10" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+
+# 模糊搜索角色名称
+curl "http://localhost:8080/api/user/role/list?roleName=管理员" \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "total": 10,
+    "pageNum": 1,
+    "pageSize": 10,
+    "pages": 1,
+    "data": [
+      {
+        "id": 1,
+        "roleName": "超级管理员",
+        "roleCode": "ROLE_SUPER_ADMIN",
+        "description": "系统超级管理员",
+        "status": 1,
+        "sort": 0,
+        "permissions": ["user:create", "user:update"],
+        "createTime": "2025-01-15T10:00:00",
+        "updateTime": "2025-01-15T10:00:00"
+      }
+    ]
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 6. 查询所有启用的角色
+
+**接口**: `GET /api/user/role/enabled`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/role/enabled \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": [
+    {
+      "id": 1,
+      "roleName": "超级管理员",
+      "roleCode": "ROLE_SUPER_ADMIN",
+      "description": "系统超级管理员",
+      "status": 1,
+      "sort": 0,
+      "permissions": [],
+      "createTime": "2025-01-15T10:00:00",
+      "updateTime": "2025-01-15T10:00:00"
+    }
+  ],
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+## 🔐 权限管理API
+
+### 1. 查询权限详情
+
+**接口**: `GET /api/user/permission/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `id`: 权限ID
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/permission/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": {
+    "id": 1,
+    "parentId": 0,
+    "permissionName": "用户管理",
+    "permissionCode": "user:manage",
+    "permissionType": 1,
+    "path": "/user",
+    "component": "views/user/index",
+    "icon": "user",
+    "sort": 0,
+    "status": 1,
+    "createTime": "2025-01-15T10:00:00",
+    "updateTime": "2025-01-15T10:00:00"
+  },
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 2. 创建权限
+
+**接口**: `POST /api/user/permission`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**请求体**:
+```json
+{
+  "parentId": 0,
+  "permissionName": "用户管理",
+  "permissionCode": "user:manage",
+  "permissionType": 1,
+  "path": "/user",
+  "component": "views/user/index",
+  "icon": "user",
+  "sort": 0,
+  "status": 1
+}
+```
+
+**字段说明**:
+- `parentId`: 父权限ID（必填，0表示顶级权限）
+- `permissionName`: 权限名称（必填，最多50字符）
+- `permissionCode`: 权限编码（必填，最多100字符，只能包含小写字母、冒号和下划线）
+- `permissionType`: 权限类型（必填，1-菜单 2-按钮 3-接口）
+- `path`: 路由路径（选填，最多200字符）
+- `component`: 组件路径（选填，最多200字符）
+- `icon`: 图标（选填，最多100字符）
+- `sort`: 排序（选填，默认0）
+- `status`: 状态（选填，0-禁用 1-正常，默认1）
+
+**cURL 示例**:
+```bash
+curl -X POST http://localhost:8080/api/user/permission \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "parentId": 0,
+    "permissionName": "用户管理",
+    "permissionCode": "user:manage",
+    "permissionType": 1,
+    "path": "/user",
+    "icon": "user"
+  }'
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "创建成功",
+  "data": 10,
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**失败响应** - 权限编码已存在:
+```json
+{
+  "code": 400,
+  "message": "权限编码已存在",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 3. 更新权限
+
+**接口**: `PUT /api/user/permission/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+Content-Type: application/json
+```
+
+**路径参数**:
+- `id`: 权限ID
+
+**请求体**:
+```json
+{
+  "permissionName": "用户管理模块",
+  "path": "/user/manage",
+  "icon": "user-manage",
+  "sort": 1,
+  "status": 1
+}
+```
+
+**字段说明**: 所有字段均为选填，只更新提供的字段
+
+**cURL 示例**:
+```bash
+curl -X PUT http://localhost:8080/api/user/permission/10 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..." \
+  -H "Content-Type: application/json" \
+  -d '{
+    "permissionName": "用户管理模块",
+    "sort": 1
+  }'
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 4. 删除权限
+
+**接口**: `DELETE /api/user/permission/{id}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `id`: 权限ID
+
+**说明**:
+- 采用逻辑删除
+- 存在子权限时不能删除
+
+**cURL 示例**:
+```bash
+curl -X DELETE http://localhost:8080/api/user/permission/10 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+**失败响应** - 存在子权限:
+```json
+{
+  "code": 400,
+  "message": "存在子权限，无法删除",
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 5. 查询权限树（所有权限）
+
+**接口**: `GET /api/user/permission/tree`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/permission/tree \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": [
+    {
+      "id": 1,
+      "parentId": 0,
+      "permissionName": "系统管理",
+      "permissionCode": "system",
+      "permissionType": 1,
+      "path": "/system",
+      "icon": "system",
+      "sort": 0,
+      "status": 1,
+      "children": [
+        {
+          "id": 2,
+          "parentId": 1,
+          "permissionName": "用户管理",
+          "permissionCode": "system:user",
+          "permissionType": 1,
+          "path": "/system/user",
+          "icon": "user",
+          "sort": 0,
+          "status": 1,
+          "children": [
+            {
+              "id": 3,
+              "parentId": 2,
+              "permissionName": "新增用户",
+              "permissionCode": "system:user:create",
+              "permissionType": 2,
+              "sort": 0,
+              "status": 1
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 6. 查询启用的权限树
+
+**接口**: `GET /api/user/permission/tree/enabled`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**说明**: 只返回状态为启用（status=1）的权限
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/permission/tree/enabled \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应**: 同上（只包含启用的权限）
+
+---
+
+### 7. 查询所有权限（扁平结构）
+
+**接口**: `GET /api/user/permission/list`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**cURL 示例**:
+```bash
+curl http://localhost:8080/api/user/permission/list \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": [
+    {
+      "id": 1,
+      "parentId": 0,
+      "permissionName": "系统管理",
+      "permissionCode": "system",
+      "permissionType": 1,
+      "path": "/system",
+      "icon": "system",
+      "sort": 0,
+      "status": 1
+    },
+    {
+      "id": 2,
+      "parentId": 1,
+      "permissionName": "用户管理",
+      "permissionCode": "system:user",
+      "permissionType": 1,
+      "path": "/system/user",
+      "icon": "user",
+      "sort": 0,
+      "status": 1
+    }
+  ],
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
+### 8. 根据类型查询权限
+
+**接口**: `GET /api/user/permission/list/type/{type}`
+
+**请求头**:
+```
+Authorization: Bearer {accessToken}
+```
+
+**路径参数**:
+- `type`: 权限类型（1-菜单 2-按钮 3-接口）
+
+**cURL 示例**:
+```bash
+# 查询所有菜单权限
+curl http://localhost:8080/api/user/permission/list/type/1 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+
+# 查询所有按钮权限
+curl http://localhost:8080/api/user/permission/list/type/2 \
+  -H "Authorization: Bearer eyJhbGciOiJIUzI1NiJ9..."
+```
+
+**成功响应** (200 OK):
+```json
+{
+  "code": 200,
+  "message": "操作成功",
+  "data": [
+    {
+      "id": 1,
+      "parentId": 0,
+      "permissionName": "系统管理",
+      "permissionCode": "system",
+      "permissionType": 1,
+      "path": "/system",
+      "icon": "system",
+      "sort": 0,
+      "status": 1
+    }
+  ],
+  "timestamp": "2025-11-07T10:00:00"
+}
+```
+
+---
+
 ## 📝 下一步开发
 
 - [x] 实现用户信息查询接口
 - [x] 实现用户 CRUD 接口
 - [x] 网关 JWT 认证过滤器
-- [ ] Token 黑名单（Redis）
-- [ ] 角色管理接口
-- [ ] 权限管理接口
+- [x] Token 黑名单（Redis）
+- [x] 角色管理接口
+- [x] 权限管理接口
 - [ ] 部门管理接口
+- [ ] 用户注册接口
+- [ ] 密码管理接口
 - [ ] 验证码功能
 - [ ] 多设备登录管理
 

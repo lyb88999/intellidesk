@@ -1,7 +1,10 @@
 package com.intellidesk.user.controller;
 
+import com.intellidesk.common.core.constant.SecurityConstants;
 import com.intellidesk.common.core.domain.Result;
+import com.intellidesk.user.domain.dto.ChangePasswordRequest;
 import com.intellidesk.user.domain.dto.LoginRequest;
+import com.intellidesk.user.domain.dto.RegisterRequest;
 import com.intellidesk.user.domain.vo.LoginResponse;
 import com.intellidesk.user.service.IAuthService;
 import jakarta.validation.Valid;
@@ -58,5 +61,37 @@ public class AuthController {
     public Result<String> refreshToken(@RequestParam("refreshToken") String refreshToken) {
         String newAccessToken = authService.refreshToken(refreshToken);
         return Result.success("刷新成功", newAccessToken);
+    }
+
+    /**
+     * 用户注册
+     *
+     * @param registerRequest 注册请求
+     * @return 用户ID
+     */
+    @PostMapping("/register")
+    public Result<Long> register(@Valid @RequestBody RegisterRequest registerRequest) {
+        log.info("用户注册请求: username={}", registerRequest.getUsername());
+        Long userId = authService.register(registerRequest);
+        return Result.success("注册成功", userId);
+    }
+
+    /**
+     * 修改密码
+     *
+     * @param userId  用户ID（从JWT Token中获取）
+     * @param request 修改密码请求
+     * @return 响应
+     */
+    @PostMapping("/change-password")
+    public Result<Void> changePassword(
+            @RequestHeader(value = SecurityConstants.USER_ID, required = false) Long userId,
+            @Valid @RequestBody ChangePasswordRequest request) {
+        if (userId == null) {
+            return Result.error(401, "未登录");
+        }
+        log.info("修改密码请求: userId={}", userId);
+        authService.changePassword(userId, request);
+        return Result.success("密码修改成功");
     }
 }
