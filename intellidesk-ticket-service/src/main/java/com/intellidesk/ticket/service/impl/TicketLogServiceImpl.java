@@ -23,10 +23,10 @@ public class TicketLogServiceImpl implements ITicketLogService {
     private final TicketLogMapper ticketLogMapper;
 
     @Override
-    public void saveLog(TicketLog log) {
-        ticketLogMapper.insert(log);
+    public void saveLog(TicketLog ticketLog) {
+        ticketLogMapper.insert(ticketLog);
         log.info("工单日志记录成功: ticketId={}, operationType={}",
-                log.getTicketId(), log.getOperationType());
+                ticketLog.getTicketId(), ticketLog.getOperationType());
     }
 
     @Override

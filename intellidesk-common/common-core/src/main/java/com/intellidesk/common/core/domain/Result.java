@@ -55,6 +55,14 @@ public class Result<T> implements Serializable {
     }
 
     /**
+     * 成功响应（仅带消息，无数据）
+     * 用于 Result<Void> 类型的响应
+     */
+    public static <T> Result<T> success(String message) {
+        return success(message, null);
+    }
+
+    /**
      * 成功响应（带数据）
      */
     public static <T> Result<T> success(T data) {
