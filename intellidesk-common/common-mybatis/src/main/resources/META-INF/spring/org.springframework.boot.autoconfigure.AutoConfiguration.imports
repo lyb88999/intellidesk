@@ -1,0 +1,2 @@
+com.intellidesk.common.mybatis.config.MyBatisPlusConfig
+com.intellidesk.common.mybatis.handler.MyBatisMetaObjectHandler
