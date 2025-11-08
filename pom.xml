@@ -41,7 +41,7 @@
 
         <!-- 数据库相关 -->
         <mysql.version>8.0.33</mysql.version>
-        <mybatis.plus.version>3.5.4.1</mybatis.plus.version>
+        <mybatis.plus.version>3.5.5</mybatis.plus.version>
         <druid.version>1.2.20</druid.version>
         <flyway.version>9.22.3</flyway.version>
 
