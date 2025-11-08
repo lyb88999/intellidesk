@@ -34,7 +34,7 @@ services:
 
   # ==================== 基础设施 - 缓存 ====================
   redis:
-    image: redis:7.2-alpine
+    image: redis:7-alpine
     container_name: intellidesk-redis
     restart: always
     environment:
@@ -79,7 +79,7 @@ services:
 
   # ==================== 基础设施 - 搜索引擎 ====================
   elasticsearch:
-    image: elasticsearch:8.11.0
+    image: elasticsearch:8.13.0
     container_name: intellidesk-elasticsearch
     restart: always
     environment:
@@ -160,7 +160,7 @@ services:
 
   # ==================== 基础设施 - 注册中心 & 配置中心 ====================
   nacos:
-    image: nacos/nacos-server:v2.2.3-slim
+    image: nacos/nacos-server:v2.3.0
     container_name: intellidesk-nacos
     restart: always
     depends_on:
@@ -289,7 +289,7 @@ services:
 
   # ==================== 日志 - Kibana ====================
   kibana:
-    image: kibana:8.11.0
+    image: kibana:8.13.0
     container_name: intellidesk-kibana
     restart: always
     depends_on:

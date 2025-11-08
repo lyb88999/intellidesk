@@ -5,7 +5,7 @@ import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.intellidesk.common.core.domain.PageResult;
 import com.intellidesk.common.core.domain.ResultCode;
 import com.intellidesk.common.core.exception.BusinessException;
-import com.intellidesk.common.core.util.Assert;
+import com.intellidesk.common.core.utils.Assert;
 import com.intellidesk.ticket.domain.dto.*;
 import com.intellidesk.ticket.domain.entity.Ticket;
 import com.intellidesk.ticket.domain.entity.TicketLog;
@@ -106,7 +106,7 @@ public class TicketServiceImpl implements ITicketService {
 
         // 1. 查询工单是否存在
         Ticket existingTicket = ticketMapper.selectById(request.getId());
-        Assert.notNull(existingTicket, ResultCode.TICKET_NOT_FOUND);
+        Assert.notNull(existingTicket, ResultCode.TICKET_NOT_FOUND, "工单不存在");
 
         // 2. 检查工单状态
         if (TicketStatus.CLOSED.getCode().equals(existingTicket.getStatus()) ||
@@ -138,7 +138,7 @@ public class TicketServiceImpl implements ITicketService {
 
         // 1. 查询工单是否存在
         Ticket ticket = ticketMapper.selectById(id);
-        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND);
+        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND, "工单不存在");
 
         // 2. 逻辑删除
         ticketMapper.deleteById(id);
@@ -149,7 +149,7 @@ public class TicketServiceImpl implements ITicketService {
     public TicketVO getTicketById(Long id) {
         log.info("查询工单详情: id={}", id);
         Ticket ticket = ticketMapper.selectById(id);
-        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND);
+        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND, "工单不存在");
         return convertToVO(ticket);
     }
 
@@ -197,7 +197,7 @@ public class TicketServiceImpl implements ITicketService {
 
         // 1. 查询工单
         Ticket ticket = ticketMapper.selectById(request.getTicketId());
-        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND);
+        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND, "工单不存在");
 
         // 2. 检查状态
         if (TicketStatus.CLOSED.getCode().equals(ticket.getStatus()) ||
@@ -238,7 +238,7 @@ public class TicketServiceImpl implements ITicketService {
 
         // 1. 查询工单
         Ticket ticket = ticketMapper.selectById(id);
-        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND);
+        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND, "工单不存在");
 
         // 2. 更新状态
         Ticket updateEntity = new Ticket();
@@ -268,7 +268,7 @@ public class TicketServiceImpl implements ITicketService {
 
         // 1. 查询工单
         Ticket ticket = ticketMapper.selectById(id);
-        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND);
+        Assert.notNull(ticket, ResultCode.TICKET_NOT_FOUND, "工单不存在");
 
         // 2. 更新状态
         Ticket updateEntity = new Ticket();

@@ -10,7 +10,7 @@ import com.intellidesk.chat.service.IConversationService;
 import com.intellidesk.chat.util.ConversationNoGenerator;
 import com.intellidesk.common.core.domain.PageResult;
 import com.intellidesk.common.core.domain.ResultCode;
-import com.intellidesk.common.core.util.Assert;
+import com.intellidesk.common.core.utils.Assert;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
@@ -68,7 +68,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         // 查询会话
         Conversation conversation = conversationMapper.selectById(conversationId);
-        Assert.notNull(conversation, ResultCode.CONVERSATION_NOT_FOUND);
+        Assert.notNull(conversation, ResultCode.CONVERSATION_NOT_FOUND, "会话不存在");
 
         // 计算等待时长
         long waitDuration = 0;
@@ -95,7 +95,7 @@ public class ConversationServiceImpl implements IConversationService {
 
         // 查询会话
         Conversation conversation = conversationMapper.selectById(conversationId);
-        Assert.notNull(conversation, ResultCode.CONVERSATION_NOT_FOUND);
+        Assert.notNull(conversation, ResultCode.CONVERSATION_NOT_FOUND, "会话不存在");
 
         // 计算对话时长
         long chatDuration = 0;
@@ -118,7 +118,7 @@ public class ConversationServiceImpl implements IConversationService {
     public ConversationVO getConversationById(Long conversationId) {
         log.info("查询会话详情: conversationId={}", conversationId);
         Conversation conversation = conversationMapper.selectById(conversationId);
-        Assert.notNull(conversation, ResultCode.CONVERSATION_NOT_FOUND);
+        Assert.notNull(conversation, ResultCode.CONVERSATION_NOT_FOUND, "会话不存在");
         return convertToVO(conversation);
     }
 
