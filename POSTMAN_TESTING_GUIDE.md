@@ -27,7 +27,7 @@
 
 1. 在 Postman 右上角选择环境：**IntelliDesk Development**
 2. 点击环境右侧的眼睛图标，查看环境变量
-3. 确认 `baseUrl` 配置正确（默认：`http://localhost:8080/user-service`）
+3. 确认 `baseUrl` 配置正确（默认：`http://localhost:8080/api/user`）
 
 ### 3. 开始测试
 

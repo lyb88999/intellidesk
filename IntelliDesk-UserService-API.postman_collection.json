@@ -732,7 +732,7 @@
 	"variable": [
 		{
 			"key": "baseUrl",
-			"value": "http://localhost:8080/user-service",
+			"value": "http://localhost:8080/api/user",
 			"type": "string"
 		}
 	]
