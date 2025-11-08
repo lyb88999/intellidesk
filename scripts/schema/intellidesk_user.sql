@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
     `user_type` TINYINT(2) NOT NULL DEFAULT 1 COMMENT '用户类型:1-客服,2-客户,3-管理员',
     `status` TINYINT(2) NOT NULL DEFAULT 1 COMMENT '状态:0-禁用,1-正常',
     `dept_id` BIGINT(20) DEFAULT NULL COMMENT '部门ID',
+    `skill_group_id` BIGINT(20) DEFAULT NULL COMMENT '技能组ID',
     `create_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `create_by` BIGINT(20) DEFAULT NULL COMMENT '创建人',
@@ -27,6 +28,7 @@ CREATE TABLE IF NOT EXISTS `sys_user` (
     PRIMARY KEY (`id`),
     UNIQUE KEY `uk_username` (`username`),
     KEY `idx_dept_id` (`dept_id`),
+    KEY `idx_skill_group_id` (`skill_group_id`),
     KEY `idx_user_type` (`user_type`),
     KEY `idx_status` (`status`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='用户表';
