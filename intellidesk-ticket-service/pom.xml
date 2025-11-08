@@ -50,26 +50,31 @@
         <dependency>
             <groupId>com.intellidesk</groupId>
             <artifactId>common-core</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.intellidesk</groupId>
             <artifactId>common-web</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.intellidesk</groupId>
             <artifactId>common-security</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.intellidesk</groupId>
             <artifactId>common-redis</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <dependency>
             <groupId>com.intellidesk</groupId>
             <artifactId>common-mybatis</artifactId>
+            <version>${project.version}</version>
         </dependency>
 
         <!-- MySQL -->
@@ -88,7 +93,7 @@
         <!-- MyBatis Plus -->
         <dependency>
             <groupId>com.baomidou</groupId>
-            <artifactId>mybatis-plus-spring-boot3-starter</artifactId>
+            <artifactId>mybatis-plus-boot-starter</artifactId>
         </dependency>
 
         <!-- Redis -->
