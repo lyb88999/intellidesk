@@ -53,6 +53,11 @@ public class WebSocketMessage implements Serializable {
     private Long receiverId;
 
     /**
+     * 接收者姓名
+     */
+    private String receiverName;
+
+    /**
      * 消息内容
      */
     private String content;

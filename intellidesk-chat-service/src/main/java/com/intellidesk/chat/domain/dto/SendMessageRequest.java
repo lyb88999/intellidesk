@@ -38,4 +38,36 @@ public class SendMessageRequest implements Serializable {
      * 附件URL
      */
     private String attachmentUrl;
+
+    /**
+     * 发送者ID
+     */
+    private Long senderId;
+
+    /**
+     * 发送者姓名
+     */
+    private String senderName;
+
+    /**
+     * 发送者类型: 1-客户, 2-客服, 3-系统, 4-AI机器人
+     */
+    private Integer senderType;
+
+    /**
+     * 接收者ID
+     */
+    private Long receiverId;
+
+    /**
+     * 接收者姓名
+     */
+    private String receiverName;
+
+    /**
+     * WebSocket消息类型（与messageType区分）:
+     * 1-文本消息, 2-图片消息, 3-文件消息,
+     * 10-连接成功, 11-心跳, 12-系统消息
+     */
+    private Integer type;
 }
