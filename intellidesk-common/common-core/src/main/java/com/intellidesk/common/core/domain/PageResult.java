@@ -77,7 +77,16 @@ public class PageResult<T> implements Serializable {
     }
 
     /**
-     * 创建分页结果
+     * 创建分页结果（简化版，只传总数和记录列表）
+     * 使用默认分页参数：当前页=1，每页大小=records.size()
+     */
+    public static <T> PageResult<T> of(Long total, List<T> records) {
+        long size = records == null ? 0L : records.size();
+        return new PageResult<>(records, total, 1L, size > 0 ? size : 10L);
+    }
+
+    /**
+     * 创建分页结果（完整版）
      */
     public static <T> PageResult<T> of(List<T> records, Long total, Long current, Long size) {
         return new PageResult<>(records, total, current, size);
